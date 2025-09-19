@@ -143,115 +143,141 @@ here we have some loses because genes between versions do not translate well!
 
 ```{r, chunk.label = paste0("inconsistent-IDs_", plantName1), echo=TRUE, eval=TRUE}
 
-fp = file.path('..', 'input', 'OrthoFinder', plantDirIn)
-fl = list.files(fp)
-fn = fl[grep('Compara_', fl)] # change filename
-compara = data.table::fread(file.path(fp, fn))
-fn = fl[grep('PLAZA_', fl)] # change filename
-if (length(fn) != 0) {
-  plaza = data.table::fread(file.path(fp, fn))
+if (flag1 != 4 & flag2 != 4) {
+
+  fp = file.path('..', 'input', 'OrthoFinder', plantDirIn)
+  
+  fl = list.files(fp)
+  fn = fl[grep('Compara_', fl)] # change filename
+  if (length(fn) != 0) {
+    compara = data.table::fread(file.path(fp, fn))
+  } else {
+    compara = data.frame(matrix(ncol = 4, nrow = 0))
+  }
+  
+  fn = fl[grep('PLAZA_', fl)] # change filename
+  if (length(fn) != 0) {
+    plaza = data.table::fread(file.path(fp, fn))
+  } else {
+    plaza = data.frame(matrix(ncol = 4, nrow = 0))
+  }
+  
+  
+  compara = compara[compara$Species == ref_genome, ] # change name
+  plaza = plaza[plaza$Species == ref_genome, ] # change name
+  
+  
+  colnames(compara)[3] = colnames(plaza)[3] = 'source'
+  
+  if (nrow(compara) != 0) {
+    compara[, OrthoDB_list := stringr::str_split(source, pattern = ",\\s*")] # change colname
+    compara[, Orthologs_list := stringr::str_split(Orthologs, pattern = ",\\s*")]
+    result = compara[, {
+      # Cartesian join of OrthoDB_list and Orthologs_list for this row
+      pairs = CJ(OrthoDB_list[[1]], Orthologs_list[[1]], sorted = FALSE)
+      setnames(pairs, c("OrthoDB_ID", "Ortholog"))
+      pairs
+    }, by = seq_len(nrow(compara))]
+    compara = result[, seq_len := NULL]
+    # compara$Ortholog = sapply(compara$Ortholog, function(x) paste(unlist(strsplit(x, "_"))[1:2], collapse = "_")) # change when needed
+    compara$OrthoDB_ID = sub(compara_pattern_in1, compara_pattern_out1, 
+                             sub(compara_pattern_in2, compara_pattern_out2, compara$OrthoDB_ID)) # change when needed
+    compara = compara[!duplicated(compara), ]
+    head(compara)
+  }
+  
+  
+  if (nrow(plaza) != 0) {
+    plaza[, OrthoDB_list := stringr::str_split(source, pattern = ",\\s*")] # change colname
+    plaza[, Orthologs_list := stringr::str_split(Orthologs, pattern = ",\\s*")]
+    result = plaza[, {
+      # Cartesian join of OrthoDB_list and Orthologs_list for this row
+      pairs = CJ(OrthoDB_list[[1]], Orthologs_list[[1]], sorted = FALSE)
+      setnames(pairs, c("OrthoDB_ID", "Ortholog"))
+      pairs
+    }, by = seq_len(nrow(plaza))]
+    plaza = result[, seq_len := NULL]
+    # plaza$Ortholog = sapply(plaza$Ortholog, function(x) paste(unlist(strsplit(x, "_"))[1:2], collapse = "_")) # change when needed
+    plaza$OrthoDB_ID = sub(plaza_pattern_in1, '', sub(plaza_pattern_in2, "", plaza$OrthoDB_ID)) # change when needed
+    plaza = plaza[!duplicated(plaza), ]
+    head(plaza)  
+  }
+  
+  if (flag3) compara$Ortholog = gsub('.* ', '', compara$Ortholog) # improve if possible
+  
+  if (nrow(compara) != 0) {
+    if (flag2 == 1) { # geneID and prot ID are completely different # make flags
+      df_compara = dplyr::filter(df, source == "ensembl-compara") %>%
+        dplyr::left_join(compara, by = c("to_geneID" = "OrthoDB_ID"), relationship = "many-to-many") %>%
+        dplyr::mutate(to_geneID = Ortholog) %>%
+        dplyr::select(-Ortholog)  
+    } else if (flag2 == 2) {
+        df_compara = dplyr::filter(df, source == "ensembl-compara") %>%
+        dplyr::left_join(compara, by = c("to_protID" = "OrthoDB_ID"), relationship = "many-to-many") %>%
+        dplyr::mutate(to_geneID = Ortholog) %>%
+        dplyr::select(-Ortholog) 
+    } else {
+      df_compara = NULL
+    }
+    df_compara = df_compara[!is.na(df_compara$to_geneID), ]
+  }
+  
+  
+  
+  if (nrow(plaza) != 0) {
+    df_plaza = dplyr::filter(df, source == "PLAZA") %>%
+      dplyr::left_join(plaza, by = c("to_geneID" = "OrthoDB_ID"), relationship = "many-to-many") %>%
+      dplyr::mutate(to_geneID = Ortholog) %>%
+      dplyr::select(-Ortholog)
+    df_plaza = df_plaza[!is.na(df_plaza$to_geneID), ]
+  }
+  
+  if (nrow(compara) != 0) {
+    if (nrow(plaza) != 0) {
+      df_other = dplyr::filter(df, !(source %in% c("ensembl-compara", "PLAZA")))  
+      dt = dplyr::bind_rows(df_compara, df_plaza, df_other)
+    } else {
+      df_other = dplyr::filter(df, !(source %in% c("ensembl-compara")))
+      dt = dplyr::bind_rows(df_compara, df_other)
+    }
+  } else {
+    dt = df
+  }
+  
+  
+  ind = c(grep("from_geneID|to_geneID|source", colnames(dt)))
+  df = dt[, ..ind]
+  df = df[!duplicated(df), ]
+  
+  
+  if (nrow(compara) != 0) {
+    if (nrow(plaza) != 0) {
+      ind = which(df$source %in% c('ensembl-compara', 'PLAZA'))
+      df$to_geneID[ind] = sub(pattern_in, pattern_out, df$to_geneID[ind]) # change logic as needed
+    } else {
+      ind = which(df$source %in% c('ensembl-compara'))
+      df$to_geneID[ind] = sub(pattern_in, pattern_out, df$to_geneID[ind]) # change logic as needed
+    }
+  }
+  
+  
+  
+  
+  
+  df %>%
+    dplyr::group_by(source) %>%
+    dplyr::slice_head(n = 2) %>%
+    dplyr::bind_rows(df %>% dplyr::group_by(source) %>% dplyr::slice_tail(n = 2)) %>%
+    dplyr::arrange(source) %>%
+    dplyr::ungroup() -> first_last_three_per_source
+  
+  print(first_last_three_per_source, n = nrow(first_last_three_per_source))
+
 } else {
-  plaza = data.frame(matrix(ncol = 4, nrow = 0))
+  ind = c(grep("from_geneID|to_geneID|source", colnames(df)))
+  df = df[, ..ind]
+  
 }
-
-
-compara = compara[compara$Species == ref_genome, ] # change name
-plaza = plaza[plaza$Species == ref_genome, ] # change name
-
-
-colnames(compara)[3] = colnames(plaza)[3] = 'source'
-
-
-compara[, OrthoDB_list := stringr::str_split(source, pattern = ",\\s*")] # change colname
-compara[, Orthologs_list := stringr::str_split(Orthologs, pattern = ",\\s*")]
-result = compara[, {
-  # Cartesian join of OrthoDB_list and Orthologs_list for this row
-  pairs = CJ(OrthoDB_list[[1]], Orthologs_list[[1]], sorted = FALSE)
-  setnames(pairs, c("OrthoDB_ID", "Ortholog"))
-  pairs
-}, by = seq_len(nrow(compara))]
-compara = result[, seq_len := NULL]
-# compara$Ortholog = sapply(compara$Ortholog, function(x) paste(unlist(strsplit(x, "_"))[1:2], collapse = "_")) # change when needed
-compara$OrthoDB_ID = sub(compara_pattern_in1, compara_pattern_out1, 
-                         sub(compara_pattern_in2, compara_pattern_out2, compara$OrthoDB_ID)) # change when needed
-compara = compara[!duplicated(compara), ]
-head(compara)
-
-
-if (nrow(plaza) != 0) {
-  plaza[, OrthoDB_list := stringr::str_split(source, pattern = ",\\s*")] # change colname
-  plaza[, Orthologs_list := stringr::str_split(Orthologs, pattern = ",\\s*")]
-  result = plaza[, {
-    # Cartesian join of OrthoDB_list and Orthologs_list for this row
-    pairs = CJ(OrthoDB_list[[1]], Orthologs_list[[1]], sorted = FALSE)
-    setnames(pairs, c("OrthoDB_ID", "Ortholog"))
-    pairs
-  }, by = seq_len(nrow(plaza))]
-  plaza = result[, seq_len := NULL]
-  # plaza$Ortholog = sapply(plaza$Ortholog, function(x) paste(unlist(strsplit(x, "_"))[1:2], collapse = "_")) # change when needed
-  plaza$OrthoDB_ID = sub(plaza_pattern_in1, '', sub(plaza_pattern_in2, "", plaza$OrthoDB_ID)) # change when needed
-  plaza = plaza[!duplicated(plaza), ]
-  head(plaza)  
-}
-
-if (flag3) compara$Ortholog = gsub('.* ', '', compara$Ortholog)
-
-if (flag2 == 1) { # geneID and prot ID are completely different # make flags
-  df_compara = dplyr::filter(df, source == "ensembl-compara") %>%
-    dplyr::left_join(compara, by = c("to_geneID" = "OrthoDB_ID"), relationship = "many-to-many") %>%
-    dplyr::mutate(to_geneID = Ortholog) %>%
-    dplyr::select(-Ortholog)  
-} else {
-    df_compara = dplyr::filter(df, source == "ensembl-compara") %>%
-    dplyr::left_join(compara, by = c("to_protID" = "OrthoDB_ID"), relationship = "many-to-many") %>%
-    dplyr::mutate(to_geneID = Ortholog) %>%
-    dplyr::select(-Ortholog) 
-}
-
-df_compara = df_compara[!is.na(df_compara$to_geneID), ]
-
-
-if (nrow(plaza) != 0) {
-  df_plaza = dplyr::filter(df, source == "PLAZA") %>%
-    dplyr::left_join(plaza, by = c("to_geneID" = "OrthoDB_ID"), relationship = "many-to-many") %>%
-    dplyr::mutate(to_geneID = Ortholog) %>%
-    dplyr::select(-Ortholog)
-  df_plaza = df_plaza[!is.na(df_plaza$to_geneID), ]
-}
-
-if (nrow(plaza) != 0) {
-  df_other = dplyr::filter(df, !(source %in% c("ensembl-compara", "PLAZA")))  
-  dt = dplyr::bind_rows(df_compara, df_plaza, df_other)
-} else {
-  df_other = dplyr::filter(df, !(source %in% c("ensembl-compara")))
-  dt = dplyr::bind_rows(df_compara, df_other)
-}
-
-ind = c(grep("from_geneID|to_geneID|source", colnames(dt)))
-df = dt[, ..ind]
-df = df[!duplicated(df), ]
-
-
-if (nrow(plaza) != 0) {
-  ind = which(df$source %in% c('ensembl-compara', 'PLAZA'))
-  df$to_geneID[ind] = sub(pattern_in, pattern_out, df$to_geneID[ind]) # change logic as needed
-} else {
-  ind = which(df$source %in% c('ensembl-compara'))
-  df$to_geneID[ind] = sub(pattern_in, pattern_out, df$to_geneID[ind]) # change logic as needed
-}
-
-
-
-
-
-df %>%
-  dplyr::group_by(source) %>%
-  dplyr::slice_head(n = 2) %>%
-  dplyr::bind_rows(df %>% dplyr::group_by(source) %>% dplyr::slice_tail(n = 2)) %>%
-  dplyr::arrange(source) %>%
-  dplyr::ungroup() -> first_last_three_per_source
-
-print(first_last_three_per_source, n = nrow(first_last_three_per_source))
 
 df = df[!duplicated(df), ]
 
@@ -319,7 +345,7 @@ if (flag1 == 1) {
 } else if (flag1 == 3) {
   source_cols = c("MCScanX", 'OrthoDB', 'RBH', "FastOMA")
 } else {
-  c("MCScanX", 'RBH', "FastOMA")
+  source_cols = c("MCScanX", 'RBH', "FastOMA")
 }
 
 
@@ -626,7 +652,7 @@ if (flag1 == 1) {
 } else if (flag1 == 3) {
   methods = c("MCScanX", 'OrthoDB', 'RBH', "FastOMA")
 } else {
-  c("MCScanX", 'RBH', "FastOMA")
+  methods = c("MCScanX", 'RBH', "FastOMA")
 }
 
 
@@ -681,41 +707,18 @@ ggplot2::ggsave(paste0("../reports/fruitTrees/", plantNameOut, '/', plantNameOut
 
 
 
-# Initialize an empty set or list covered_genes.
-# 
-# For each method in the list:
-# ["MCScanX", "ensembl-compara", "PLAZA", "OrthoDB", "RBH", "FastOMA"]
-# 
-# For every row in the data table dt:
-# 
-# a. Check if filter_criteria is "reject" for the row.
-# 
-# b. Check if the value of the column corresponding to method in this row is TRUE.
-# 
-# c. Check if from_geneID in this row is not in covered_genes.
-# 
-# d. If method is one of ["OrthoDB", "RBH", "FastOMA"]:
-      # Check if gene pair is covered by all three methods:
-      # If yes:
-      # is_candidate = TRUE
-      # new_criteria = "OrthoDB_FastOMA_RBH"
-      # Else if gene pair is covered by any two of those three methods:
-      # If yes:
-      # is_candidate = TRUE
-      # new_criteria = join the two method names with underscore, e.g. "OrthoDB_FastOMA" or "RBH_FastOMA" or "OrthoDB_RBH"
-      # Else if MapMan4_Match string contains "match based on" and current method name:
-      # is_candidate = TRUE
-      # new_criteria = {method}_MapMan4 (e.g., "RBH_MapMan4")
-      # Else:
-      # is_candidate = FALSE
 
-
-special_methods = c("OrthoDB", "RBH", "FastOMA")
+if (flag1 != 4 & flag2 != 4) {
+  special_methods = c("OrthoDB", "RBH", "FastOMA")
+} else {
+  special_methods = c("RBH", "FastOMA")
+}
 
 # Initialize a named vector to count method_MapMan4 assignments
 mapman4_counts = setNames(rep(0, length(special_methods)), paste0(special_methods, "_MapMan4"))
 
 for (method in methods) {
+
   base_cond = dt$filter_criteria == "reject" & dt[[method]] == TRUE & 
                !(dt$to_geneID %in% covered_genes) & !(dt$from_geneID %in% covered_genes)
   add_cond = rep(TRUE, nrow(dt))
@@ -744,6 +747,9 @@ for (method in methods) {
           new_criteria = paste(sort(covered_by), collapse = "_")
         } else if (count_covered == 1) {
           # Check MapMan4_Match string contains "match based on" and method name (case-insensitive)
+          # reconsider
+          # (grepl("match based on", mapman_val, ignore.case = TRUE) &&
+          #   !grepl("^100% match based on 35\\.2$", mapman_val)) # for flags 3
           if (grepl("match based on", row$MapMan4_Match, ignore.case = TRUE)) {
             is_candidate = TRUE
             new_criteria = paste0(method, "_MapMan4")
@@ -941,7 +947,7 @@ if (flag1 == 1) {
 } else if (flag1 == 3) {
   source_cols = c("MCScanX", 'OrthoDB', 'RBH', "FastOMA")
 } else {
-  c("MCScanX", 'RBH', "FastOMA")
+  source_cols = c("MCScanX", 'RBH', "FastOMA")
 }
 
 

@@ -182,6 +182,8 @@ pss_long = pss_long %>%
 ```
 
 
+**Note**: be careful with 35.2 bin matches
+
 
 # Abbreviations
 
@@ -481,6 +483,236 @@ cat(child_content)
 ```
 
 
+
+```{r, parm, results='asis'}
+
+
+params_list <- list(
+  
+  plantName1 = 'parm'
+  , # change name - PLAZA, OrthoDB, RBH
+  plantName2 = 'parm'
+  , # change name - compara # sources
+  plantName3 = '^apricot$'
+  ,  # change name - MCScanX # sources
+  plantName4 = 'parm'
+  ,  # change name - FastOMA # sources
+  
+  plantDirIn = "parm_apricot"
+  , # inconsistent-IDs, orthofinder
+  plantNameOut = "apricot"
+  ,
+  plantDirOut = file.path('..', 'reports', 'fruitTrees', "apricot")
+  ,
+
+  pattern_in = "(\\.[^.]+){2}$" # second dot from the end of the string
+  , # everythin after the last dot
+  pattern_out = ""
+  , # all-IDs
+  compara_pattern_in1 = "" # nothin here # improve by flag
+  ,
+  compara_pattern_out1 = "" # nothin here
+  ,
+  compara_pattern_in2 = '' # nothin here
+  ,
+  compara_pattern_out2 = '' # nothin here
+  ,
+  plaza_pattern_in1 = "" # nothin here
+  ,
+  plaza_pattern_in2 = "" # nothin here
+  ,
+  
+  ref_genome = "Prunus_armeniaca_Marouch_n14_peptide"
+  , # inconsistent-IDs, orthofinder for OrthoDB
+  
+  mercator = 'parm_Mercator4v7_results.txt'
+  , # plant-gmm
+  mercatorPatternIn1 = "[\u2018\u2019\u201C\u201D']"
+  , # plant-gmm, generic removal of nonsence
+  mercatorPatternOut1 = ""
+  , # plant-gmm
+  mercatorPatternIn2 = "([mg])"
+  , # plant-gmm
+  mercatorPatternOut2 = "\\U\\1" # plant-gmm
+  ,
+  flag1 = 3
+  ,
+  flag2 = 3
+  ,
+  flag3 = FALSE
+)
+
+# note: in compara - geneID and prot ID are completely different
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("08_fruitTrees-child1.rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
+
+
+
+
+```{r, pcox, results='asis'}
+
+
+params_list <- list(
+  
+  plantName1 = 'pcox'
+  , # change name - PLAZA, OrthoDB, RBH
+  plantName2 = 'pcox'
+  , # change name - compara # sources
+  plantName3 = '^pear$'
+  ,  # change name - MCScanX # sources
+  plantName4 = 'pcox'
+  ,  # change name - FastOMA # sources
+  
+  plantNameOut = "pear"
+  ,
+  plantDirOut = file.path('..', 'reports', 'fruitTrees', "pear")
+  ,
+
+  pattern_in = "(\\.[^.]+)$" # last dot from the end of the string
+  , # everythin after the last dot
+  pattern_out = ""
+  , # all-IDs
+  
+  mercator = 'pcox_Mercator4v7_results.txt'
+  , # plant-gmm
+  mercatorPatternIn1 = "[\u2018\u2019\u201C\u201D']"
+  , # plant-gmm, generic removal of nonsence
+  mercatorPatternOut1 = ""
+  , # plant-gmm
+  mercatorPatternIn2 = "(\\.chr\\d+)a(\\.)"
+  , # plant-gmm
+  mercatorPatternOut2 = "\\1A\\2"
+  ,
+  flag1 = 4
+  ,
+  flag2 = 4
+  ,
+  flag3 = FALSE
+)
+
+# note: in compara - geneID and prot ID are completely different
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("08_fruitTrees-child1.rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
+
+
+```{r, pcer, results='asis'}
+
+
+params_list <- list(
+  
+  plantName1 = 'pcer'
+  , # change name - PLAZA, OrthoDB, RBH
+  plantName2 = 'pcer'
+  , # change name - compara # sources
+  plantName3 = '^cherryplum$'
+  ,  # change name - MCScanX # sources
+  plantName4 = 'pcer'
+  ,  # change name - FastOMA # sources
+  
+  plantNameOut = "cherryplum"
+  ,
+  plantDirOut = file.path('..', 'reports', 'fruitTrees', "cherryplum")
+  ,
+
+  pattern_in = ""
+  , # everythin after the last dot
+  pattern_out = ""
+  , # all-IDs
+
+  mercator = 'pcer_Mercator4v7_results.txt'
+  , # plant-gmm
+  mercatorPatternIn1 = "[\u2018\u2019\u201C\u201D']"
+  , # plant-gmm, generic removal of nonsence
+  mercatorPatternOut1 = ""
+  , # plant-gmm
+  mercatorPatternIn2 = "-(ra)"
+  , # plant-gmm
+  mercatorPatternOut2 = "-\\U\\1"
+  ,
+  flag1 = 4
+  ,
+  flag2 = 4
+  ,
+  flag3 = FALSE
+)
+
+# note: in compara - geneID and prot ID are completely different
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("08_fruitTrees-child1.rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
+
+
+```{r, psib, results='asis'}
+
+
+params_list <- list(
+  
+  plantName1 = 'psib'
+  , # change name - PLAZA, OrthoDB, RBH
+  plantName2 = 'psib'
+  , # change name - compara # sources
+  plantName3 = '^siberianapricot$'
+  ,  # change name - MCScanX # sources
+  plantName4 = 'psib'
+  ,  # change name - FastOMA # sources
+  
+  plantNameOut = "siberianapricot"
+  ,
+  plantDirOut = file.path('..', 'reports', 'fruitTrees', "siberianapricot")
+  ,
+
+  pattern_in = "(\\.[^.]+){2}$"
+  , # everythin after the last dot
+  pattern_out = ""
+  , # all-IDs
+
+  mercator = 'psib_Mercator4v7_results.txt'
+  , # plant-gmm
+  mercatorPatternIn1 = "[\u2018\u2019\u201C\u201D']"
+  , # plant-gmm, generic removal of nonsence
+  mercatorPatternOut1 = ""
+  , # plant-gmm
+  mercatorPatternIn2 = "f106g"
+  , # plant-gmm
+  mercatorPatternOut2 = "F106G"
+  ,
+  flag1 = 4
+  ,
+  flag2 = 4
+  ,
+  flag3 = FALSE
+)
+
+# note: in compara - geneID and prot ID are completely different
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("08_fruitTrees-child1.rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
 
 
 ```{r}
