@@ -1,0 +1,311 @@
+---
+title: "02_compara"
+author: "zagor"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_caption: yes
+    self_contained: yes
+    fig_width: 9
+    fig_height: 8
+    toc: true
+    toc_float:
+      toc_collapsed: false
+    toc_depth: 5
+    number_sections: yes
+    theme: flatly
+    highlight: tango
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dev = c('png', 'pdf'),  # this embeds pdf and crates scrolable blocks if pdf is first
+                      fig.path = "../reports/compara/", # save each figure here
+                      # dev = c('png'), 
+                      fig.align = 'center', 
+                      dpi = 300,
+                      fig.height = 8, 
+                      fig.width = 9 ,
+                      warning = FALSE, message = FALSE
+                      )
+```
+
+
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+
+rm(list = ls(all = TRUE))
+gc()
+
+
+library(magrittr)
+library(ggplot2)
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+
+
+
+```
+
+
+![](../figs/tree_example1.png)
+
+<https://www.ensembl.org/info/genome/compara/homology_types.html>
+
+<https://www.ensembl.org/info/website/tutorials/compara.html>
+
+* Homologues are separated into Orthologues (across different species) and Paralogues (within a species).
+* Whole genome alignments are determined as part of the Ensembl release cycle, incorporating new species and new assemblies.
+
+<https://www.ensembl.org/info/genome/compara/homology_method.html>
+
+<https://www.ensembl.org/info/genome/compara/Ortholog_qc_manual.html>
+
+* The whole genome alignment score calculates the coverage of the alignment over the orthologue pair.
+* In every orthology inference between two species, the set of orthologue pairs between the species is considered for high-confidence annotation. The GOC and WGA scores among others are used to determine which orthologies to tag as being high-confidence.
+*  The primary filter used to select the high-confidence set of orthologue pairs, consists of three thresholds for respectively the GOC score, the WGA coverage and the percentage identity of the orthologue pairs. The thresholds we use depend on the most recent common ancestor of the species pair, according to the table below. The primary filter is used if there are scores of either type (GOC or WGA) in the set of orthologues between the two species. 
+* The orthology between two genes will be classified as high confidence if the alignment between the two genes satisfies the percentage identity requirement and either GOC or WGA scores meet their thresholds.
+* If GOC or WGA scores are not available or if no threshold is used for a set of orthologues, the pipeline will use fallback criteria, that is the prediction will be classified as high confidence if the percentage identity meets the threshold and the prediction is [tree compliant](https://www.ensembl.org/info/genome/compara/homology_types.html#betweenspeciesparalogues). 
+
+# plant selection
+
+```{r}
+
+fp = file.path('..', 'input', 'Compara')
+
+species = c('arabidopsis_thaliana', 
+            'malus_domestica_golden',
+            'prunus_avium', 
+            'prunus_dulcis', 
+            'prunus_persica',
+            'solanum_lycopersicum',
+            'solanum_tuberosum',
+            'vitis_vinifera')
+
+```
+
+
+```{r}
+
+clean_text = function(x) {
+  if (is.character(x)) {
+    # Remove all whitespace and quotes
+    cleaned <- gsub("[\\s\"']", "", x, perl = TRUE)
+    # Replace "NULL" with NA
+    ifelse(cleaned == "NULL", NA, cleaned)
+  } else {
+    x
+  }
+}
+
+```
+
+
+# merge
+
+```{r, merge}
+
+fl = list.files(fp, pattern = '\\.zip')
+
+comparaPlants = NULL
+
+for (i in fl) {
+  
+  # print(i)
+  
+  df = data.table::fread(file.path(fp, i))
+
+  df = as.data.frame(lapply(df, clean_text), stringsAsFactors = FALSE)
+
+  # print(table(df$homology_type))
+  # print(apply(df, 2, function(x) sum(is.na(x))))
+  
+  df$source = sub('_.*', '', i)
+  sort(unique(df$homology_species))
+  
+  df = df[df$homology_species %in% species, ]
+  # table(df$species, df$homology_species)
+  
+  comparaPlants = rbind(comparaPlants, df)
+  
+}
+
+
+
+table(comparaPlants$species, comparaPlants$homology_species)
+table(comparaPlants$homology_type, comparaPlants$source)
+sum(duplicated(comparaPlants$homology_id))
+
+ggplot(comparaPlants, aes(x = homology_identity)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "black") +
+  facet_wrap(~ source, ncol = 4) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Homology Identity per source table",
+    x = "Homology Identity",
+    y = "Count"
+  )
+
+ggplot(comparaPlants, aes(x = identity)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "black") +
+  facet_wrap(~ source, ncol = 4) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Identity per source table",
+    x = "Identity",
+    y = "Count"
+  )
+
+
+
+table(comparaPlants$is_high_confidence, comparaPlants$homology_species)
+
+# prunus to prunus
+ind = intersect(grep('prunus', comparaPlants$species), grep('prunus', comparaPlants$homology_species))
+table(comparaPlants$species[ind], comparaPlants$homology_species[ind])
+
+
+```
+
+
+# high confidence
+
+```{r, hc}
+
+ind = which(comparaPlants$is_high_confidence == 1)
+comparaPlants.hc = comparaPlants[ind, ]
+table(comparaPlants.hc$species, comparaPlants.hc$homology_species)
+
+ggplot(comparaPlants.hc, aes(x = homology_identity)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "black") +
+  facet_wrap(~ source, ncol = 4) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Homology Identity per source table",
+    x = "Homology Identity",
+    y = "Count"
+  )
+
+
+data.table::fwrite(comparaPlants.hc, '../intermediate/comparaPlants.high_confidence.txt', sep = '\t')
+zip(zipfile = "../intermediate/comparaPlants.high_confidence.txt.zip", files = "../intermediate/comparaPlants.high_confidence.txt")
+file.remove("../intermediate/comparaPlants.high_confidence.txt")
+
+```
+
+# with ath pairs
+
+```{r}
+
+comparaPlants.filtered = comparaPlants.hc[
+  grepl("arabidopsis", comparaPlants.hc$species, ignore.case = TRUE) |
+    grepl("arabidopsis", comparaPlants.hc$homology_species, ignore.case = TRUE), ]
+
+table(comparaPlants.filtered$species, comparaPlants.filtered$homology_species)
+
+data.table::fwrite(comparaPlants.filtered, '../intermediate/comparaPlants_high_confidence_ath_pairs.txt', sep = '\t')
+zip(zipfile = "../intermediate/comparaPlants_high_confidence_ath_pairs.txt.zip", files = "../intermediate/comparaPlants_high_confidence_ath_pairs.txt")
+file.remove("../intermediate/comparaPlants_high_confidence_ath_pairs.txt")
+
+```
+
+# ath first
+
+```{r, reordered}
+
+cols_to_keep = c("gene_stable_id", "protein_stable_id", "species", 
+                 "homology_identity",
+                 "homology_gene_stable_id", "homology_protein_stable_id", "homology_species")
+
+comparaPlants.filtered = comparaPlants.filtered[, cols_to_keep, drop = FALSE]
+
+ind1 = grep("arabidopsis", comparaPlants.filtered$homology_species, ignore.case = TRUE)
+ind2 = grep("arabidopsis", comparaPlants.filtered$species, ignore.case = TRUE)
+
+
+df_sub2 = comparaPlants.filtered[ind2, ]
+cols_first = c(
+  "gene_stable_id", "protein_stable_id", "species", 
+  "homology_gene_stable_id", "homology_protein_stable_id", "homology_species",
+  "homology_identity"
+)
+df_sub2 = df_sub2[, cols_first]
+
+
+df_sub1 = comparaPlants.filtered[ind1, ]
+cols_first = c(
+  "homology_gene_stable_id", "homology_protein_stable_id", "homology_species",
+  "gene_stable_id", "protein_stable_id", "species", 
+  "homology_identity"
+)
+df_sub1 = df_sub1[, cols_first]
+
+colnames(df_sub1) = colnames(df_sub2)
+df = rbind(df_sub2, df_sub1)
+
+ggplot(df, aes(x = homology_identity)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "black") +
+  facet_wrap(~ homology_species, ncol = 4) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of hc Homology Identity to Arabidopsis",
+    x = "Homology Identity",
+    y = "Count"
+  )
+
+
+table(df$species, df$homology_species)
+
+```
+
+
+```{r}
+
+fasta_file = "../input/compara_plants/Arabidopsis_thaliana.TAIR10.pep.all.fa"
+lines = readLines(fasta_file)
+headers = grep("^>", lines, value = TRUE)
+ids = sub("^>", "", headers)
+ids = sub("\\s.*$", "", ids)
+ids = as.data.frame(ids)
+colnames(ids) = colnames(df)[2]
+ids$gene_stable_id = sub("\\.[0-9]+$", "", ids$protein_stable_id)
+ids = ids[, c(2,1)]
+ids$species = 'arabidopsis_thaliana'
+
+df = merge(ids, df, by = c("gene_stable_id", "protein_stable_id", "species"), all = TRUE)
+
+df$source = 'ensembl-compara'
+
+
+
+wa = data.table::fread('../intermediate/orthofinder_ath-within_plaza-wide.txt.zip')
+colnames(wa)[1] = colnames(df)[2]
+wa$gene_stable_id = sub("\\.[0-9]+$", "", wa$protein_stable_id)
+wa$species = 'arabidopsis_thaliana'
+columns = c("gene_stable_id", "protein_stable_id", "species", "OrthoDB", "Compara")
+wa = wa[, ..columns]
+df = merge(wa, df, by = c("gene_stable_id", "protein_stable_id", "species"), all.y = TRUE)
+
+data.table::fwrite(df, '../intermediate/comparaPlants_hc-to-ath.txt', sep = '\t')
+zip(zipfile = "../intermediate/comparaPlants_hc-to-ath.txt.zip", files = "../intermediate/comparaPlants_hc-to-ath.txt")
+file.remove("../intermediate/comparaPlants_hc-to-ath.txt")
+
+```
+
+
+# sessionInfo
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+
+sessionInfo()
+
+```
+
