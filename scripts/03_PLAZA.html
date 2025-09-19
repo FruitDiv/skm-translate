@@ -1578,8 +1578,8 @@ border-radius: 0px;
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>(<span class="at">all =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells  554638 29.7    1241451 66.4   686457 36.7
-## Vcells 1015322  7.8    8388608 64.0  1876634 14.4</code></pre>
+## Ncells  554643 29.7    1241465 66.4   686457 36.7
+## Vcells 1015341  7.8    8388608 64.0  1876634 14.4</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
@@ -1646,15 +1646,15 @@ gene family</li>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>dt <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="fu">file.path</span>(fp, fn) , <span class="at">skip =</span> <span class="dv">2</span>)</span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##              used   (Mb) gc trigger    (Mb)   max used   (Mb)
-## Ncells    2643912  141.3    5204661   278.0    2649490  141.5
-## Vcells 1261770237 9626.6 1811520530 13820.9 1262317264 9630.8</code></pre>
+## Ncells    2643967  141.3    5204604   278.0    2648763  141.5
+## Vcells 1261770293 9626.6 1811520610 13820.9 1262317286 9630.8</code></pre>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">colnames</span>(dt) <span class="ot">=</span> <span class="fu">sub</span>(<span class="st">&#39;</span><span class="sc">\\</span><span class="st">#&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="fu">colnames</span>(dt))</span>
 <span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>df <span class="ot">=</span> dt[dt<span class="sc">$</span>query_species <span class="sc">%in%</span> species <span class="sc">&amp;</span> dt<span class="sc">$</span>orthologous_species <span class="sc">%in%</span> species, ]</span>
 <span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">rm</span>(dt)</span>
 <span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger    (Mb)   max used    (Mb)
-## Ncells  974895 52.1    4163729   222.4    2678707   143.1
-## Vcells 5707745 43.6 1739123709 13268.5 1728587608 13188.1</code></pre>
+## Ncells  974950 52.1    4163684   222.4    2678762   143.1
+## Vcells 5707801 43.6 1739123786 13268.5 1728587664 13188.1</code></pre>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(df, clean_text), <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>query_species, df<span class="sc">$</span>orthologous_species)</span></code></pre></div>
 <pre><code>##      
@@ -1696,9 +1696,15 @@ gene family</li>
 ##   ath 33104 20774 24330 23228 18663</code></pre>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>dt<span class="sc">$</span>source <span class="ot">=</span> <span class="st">&#39;PLAZA&#39;</span></span>
 <span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(dt, <span class="st">&#39;../intermediate/PLAZA_selection.txt&#39;</span>, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="st">&quot;../intermediate/PLAZA_selection.txt.zip&quot;</span>, <span class="at">files =</span> <span class="st">&quot;../intermediate/PLAZA_selection.txt&quot;</span>)</span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">file.remove</span>(<span class="st">&quot;../intermediate/PLAZA_selection.txt&quot;</span>)</span></code></pre></div>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/PLAZA_selection.txt&#39;</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(dt, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="sessioninfo" class="section level1" number="3">
@@ -1728,16 +1734,16 @@ gene family</li>
 ## [1] ggplot2_3.5.2  magrittr_2.0.3
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] vctrs_0.6.5        cli_3.6.3          knitr_1.50         rlang_1.1.5       
-##  [5] xfun_0.52          generics_0.1.4     data.table_1.17.0  jsonlite_2.0.0    
-##  [9] glue_1.8.0         htmltools_0.5.8.1  sass_0.4.10        scales_1.4.0      
-## [13] rmarkdown_2.29     grid_4.4.1         evaluate_1.0.3     jquerylib_0.1.4   
-## [17] tibble_3.2.1       fastmap_1.2.0      yaml_2.3.10        lifecycle_1.0.4   
-## [21] compiler_4.4.1     dplyr_1.1.4        RColorBrewer_1.1-3 pkgconfig_2.0.3   
-## [25] rstudioapi_0.17.1  R.oo_1.27.1        R.utils_2.13.0     farver_2.1.2      
-## [29] digest_0.6.37      R6_2.6.1           tidyselect_1.2.1   dichromat_2.0-0.1 
-## [33] pillar_1.10.2      R.methodsS3_1.8.2  bslib_0.9.0        withr_3.0.2       
-## [37] tools_4.4.1        gtable_0.3.6       cachem_1.1.0</code></pre>
+##  [1] zip_2.3.2          vctrs_0.6.5        cli_3.6.3          knitr_1.50        
+##  [5] rlang_1.1.5        xfun_0.52          generics_0.1.4     data.table_1.17.0 
+##  [9] jsonlite_2.0.0     glue_1.8.0         htmltools_0.5.8.1  sass_0.4.10       
+## [13] scales_1.4.0       rmarkdown_2.29     grid_4.4.1         evaluate_1.0.3    
+## [17] jquerylib_0.1.4    tibble_3.2.1       fastmap_1.2.0      yaml_2.3.10       
+## [21] lifecycle_1.0.4    compiler_4.4.1     dplyr_1.1.4        RColorBrewer_1.1-3
+## [25] pkgconfig_2.0.3    rstudioapi_0.17.1  R.oo_1.27.1        R.utils_2.13.0    
+## [29] farver_2.1.2       digest_0.6.37      R6_2.6.1           tidyselect_1.2.1  
+## [33] dichromat_2.0-0.1  pillar_1.10.2      R.methodsS3_1.8.2  bslib_0.9.0       
+## [37] withr_3.0.2        tools_4.4.1        gtable_0.3.6       cachem_1.1.0</code></pre>
 </div>
 
 

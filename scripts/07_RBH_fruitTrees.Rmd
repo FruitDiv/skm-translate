@@ -127,12 +127,15 @@ combined_results = rbindlist(results, use.names = TRUE, fill = TRUE)
 combined_results = combined_results[!duplicated(combined_results), ]
 table(combined_results$to_plant)
 
-output_file = '../intermediate/RBH_fruitdiv.txt'
-  
-# Save output file
-data.table::fwrite(combined_results, output_file, sep = '\t')
-zip(zipfile = paste0(output_file, '.zip'), files = output_file)
-file.remove(output_file)
+
+file_path = '../intermediate/RBH_fruitdiv.txt'
+data.table::fwrite(combined_results, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 
 ```

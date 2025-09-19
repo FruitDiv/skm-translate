@@ -1579,7 +1579,7 @@ border-radius: 0px;
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger (Mb) max used (Mb)
 ## Ncells  554782 29.7    1241862 66.4   686457 36.7
-## Vcells 1016012  7.8    8388608 64.0  1876634 14.4</code></pre>
+## Vcells 1015991  7.8    8388608 64.0  1876634 14.4</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">setwd</span>(<span class="fu">dirname</span>(rstudioapi<span class="sc">::</span><span class="fu">getActiveDocumentContext</span>()<span class="sc">$</span>path))</span></code></pre></div>
@@ -1687,9 +1687,14 @@ border-radius: 0px;
 <span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a></span>
 <span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>df.pairs <span class="ot">=</span> df.pairs[, cols_first]</span>
 <span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a></span>
-<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df.pairs, <span class="st">&#39;../intermediate/orthofinder_ath-within.txt&#39;</span>, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within.txt.zip&quot;</span>, <span class="at">files =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within.txt&quot;</span>)</span>
-<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="fu">file.remove</span>(<span class="st">&quot;../intermediate/orthofinder_ath-within.txt&quot;</span>)</span></code></pre></div>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&quot;../intermediate/orthofinder_ath-within.txt&quot;</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df.pairs, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb20-14"><a href="#cb20-14" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb20-15"><a href="#cb20-15" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb20-16"><a href="#cb20-16" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb20-17"><a href="#cb20-17" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb20-18"><a href="#cb20-18" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="compara" class="section level1" number="2">
@@ -1713,9 +1718,15 @@ border-radius: 0px;
 <span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a>    <span class="at">values_fill =</span> <span class="cn">NA</span></span>
 <span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a>  )</span>
 <span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a></span>
-<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df_wide, <span class="st">&#39;../intermediate/orthofinder_ath-within_compara-wide.txt&#39;</span>, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_compara-wide.txt.zip&quot;</span>, <span class="at">files =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_compara-wide.txt&quot;</span>)</span>
-<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a><span class="fu">file.remove</span>(<span class="st">&quot;../intermediate/orthofinder_ath-within_compara-wide.txt&quot;</span>)</span></code></pre></div>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_compara-wide.txt&quot;</span></span>
+<span id="cb24-18"><a href="#cb24-18" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df_wide, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb24-19"><a href="#cb24-19" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb24-20"><a href="#cb24-20" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb24-21"><a href="#cb24-21" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb24-22"><a href="#cb24-22" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb24-23"><a href="#cb24-23" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb24-24"><a href="#cb24-24" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="plaza" class="section level1" number="3">
@@ -1735,9 +1746,15 @@ border-radius: 0px;
 <span id="cb26-13"><a href="#cb26-13" tabindex="-1"></a>    <span class="at">values_fill =</span> <span class="cn">NA</span></span>
 <span id="cb26-14"><a href="#cb26-14" tabindex="-1"></a>  )</span>
 <span id="cb26-15"><a href="#cb26-15" tabindex="-1"></a></span>
-<span id="cb26-16"><a href="#cb26-16" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df_wide, <span class="st">&#39;../intermediate/orthofinder_ath-within_plaza-wide.txt&#39;</span>, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb26-17"><a href="#cb26-17" tabindex="-1"></a><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_plaza-wide.txt.zip&quot;</span>, <span class="at">files =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_plaza-wide.txt&quot;</span>)</span>
-<span id="cb26-18"><a href="#cb26-18" tabindex="-1"></a><span class="fu">file.remove</span>(<span class="st">&quot;../intermediate/orthofinder_ath-within_plaza-wide.txt&quot;</span>)</span></code></pre></div>
+<span id="cb26-16"><a href="#cb26-16" tabindex="-1"></a></span>
+<span id="cb26-17"><a href="#cb26-17" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/orthofinder_ath-within_plaza-wide.txt&#39;</span></span>
+<span id="cb26-18"><a href="#cb26-18" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df_wide, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb26-19"><a href="#cb26-19" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb26-20"><a href="#cb26-20" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb26-21"><a href="#cb26-21" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb26-22"><a href="#cb26-22" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb26-23"><a href="#cb26-23" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb26-24"><a href="#cb26-24" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="orthodb" class="section level1" number="4">
@@ -1757,9 +1774,15 @@ border-radius: 0px;
 <span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a>    <span class="at">values_fill =</span> <span class="cn">NA</span></span>
 <span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a>  )</span>
 <span id="cb28-15"><a href="#cb28-15" tabindex="-1"></a></span>
-<span id="cb28-16"><a href="#cb28-16" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df_wide, <span class="st">&#39;../intermediate/orthofinder_ath-within_OrthoDB-wide.txt&#39;</span>, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb28-17"><a href="#cb28-17" tabindex="-1"></a><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_OrthoDB-wide.txt.zip&quot;</span>, <span class="at">files =</span> <span class="st">&quot;../intermediate/orthofinder_ath-within_OrthoDB-wide.txt&quot;</span>)</span>
-<span id="cb28-18"><a href="#cb28-18" tabindex="-1"></a><span class="fu">file.remove</span>(<span class="st">&quot;../intermediate/orthofinder_ath-within_OrthoDB-wide.txt&quot;</span>)</span></code></pre></div>
+<span id="cb28-16"><a href="#cb28-16" tabindex="-1"></a></span>
+<span id="cb28-17"><a href="#cb28-17" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/orthofinder_ath-within_OrthoDB-wide.txt&#39;</span></span>
+<span id="cb28-18"><a href="#cb28-18" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df_wide, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb28-19"><a href="#cb28-19" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb28-20"><a href="#cb28-20" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb28-21"><a href="#cb28-21" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb28-22"><a href="#cb28-22" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb28-23"><a href="#cb28-23" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb28-24"><a href="#cb28-24" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
 <div id="e.g.-inconsistent-multimatch" class="section level1" number="5">
@@ -1844,15 +1867,15 @@ multimatch</h1>
 ## [1] magrittr_2.0.3
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] vctrs_0.6.5       cli_3.6.3         knitr_1.50        rlang_1.1.5      
-##  [5] xfun_0.52         stringi_1.8.7     purrr_1.0.4       generics_0.1.4   
-##  [9] jsonlite_2.0.0    data.table_1.17.0 glue_1.8.0        htmltools_0.5.8.1
-## [13] sass_0.4.10       rmarkdown_2.29    evaluate_1.0.3    jquerylib_0.1.4  
-## [17] tibble_3.2.1      fastmap_1.2.0     yaml_2.3.10       lifecycle_1.0.4  
-## [21] stringr_1.5.1     compiler_4.4.1    dplyr_1.1.4       pkgconfig_2.0.3  
-## [25] tidyr_1.3.1       rstudioapi_0.17.1 digest_0.6.37     R6_2.6.1         
-## [29] utf8_1.2.5        tidyselect_1.2.1  pillar_1.10.2     bslib_0.9.0      
-## [33] withr_3.0.2       tools_4.4.1       cachem_1.1.0</code></pre>
+##  [1] zip_2.3.2         vctrs_0.6.5       cli_3.6.3         knitr_1.50       
+##  [5] rlang_1.1.5       xfun_0.52         stringi_1.8.7     purrr_1.0.4      
+##  [9] generics_0.1.4    jsonlite_2.0.0    data.table_1.17.0 glue_1.8.0       
+## [13] htmltools_0.5.8.1 sass_0.4.10       rmarkdown_2.29    evaluate_1.0.3   
+## [17] jquerylib_0.1.4   tibble_3.2.1      fastmap_1.2.0     yaml_2.3.10      
+## [21] lifecycle_1.0.4   stringr_1.5.1     compiler_4.4.1    dplyr_1.1.4      
+## [25] pkgconfig_2.0.3   tidyr_1.3.1       rstudioapi_0.17.1 digest_0.6.37    
+## [29] R6_2.6.1          utf8_1.2.5        tidyselect_1.2.1  pillar_1.10.2    
+## [33] bslib_0.9.0       withr_3.0.2       tools_4.4.1       cachem_1.1.0</code></pre>
 </div>
 
 

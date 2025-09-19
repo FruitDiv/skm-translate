@@ -146,10 +146,15 @@ table(dt$query_species, dt$orthologous_species)
 
 dt$source = 'PLAZA'
 
-data.table::fwrite(dt, '../intermediate/PLAZA_selection.txt', sep = '\t')
-zip(zipfile = "../intermediate/PLAZA_selection.txt.zip", files = "../intermediate/PLAZA_selection.txt")
-file.remove("../intermediate/PLAZA_selection.txt")
 
+file_path = '../intermediate/PLAZA_selection.txt'
+data.table::fwrite(dt, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 

@@ -195,9 +195,16 @@ ggplot(comparaPlants.hc, aes(x = homology_identity)) +
   )
 
 
-data.table::fwrite(comparaPlants.hc, '../intermediate/comparaPlants.high_confidence.txt', sep = '\t')
-zip(zipfile = "../intermediate/comparaPlants.high_confidence.txt.zip", files = "../intermediate/comparaPlants.high_confidence.txt")
-file.remove("../intermediate/comparaPlants.high_confidence.txt")
+
+file_path = '../intermediate/comparaPlants.high_confidence.txt'
+data.table::fwrite(comparaPlants.hc, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
+
 
 ```
 
@@ -211,9 +218,15 @@ comparaPlants.filtered = comparaPlants.hc[
 
 table(comparaPlants.filtered$species, comparaPlants.filtered$homology_species)
 
-data.table::fwrite(comparaPlants.filtered, '../intermediate/comparaPlants_high_confidence_ath_pairs.txt', sep = '\t')
-zip(zipfile = "../intermediate/comparaPlants_high_confidence_ath_pairs.txt.zip", files = "../intermediate/comparaPlants_high_confidence_ath_pairs.txt")
-file.remove("../intermediate/comparaPlants_high_confidence_ath_pairs.txt")
+
+file_path = '../intermediate/comparaPlants_high_confidence_ath_pairs.txt'
+data.table::fwrite(comparaPlants.filtered, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 
@@ -294,9 +307,16 @@ columns = c("gene_stable_id", "protein_stable_id", "species", "OrthoDB", "Compar
 wa = wa[, ..columns]
 df = merge(wa, df, by = c("gene_stable_id", "protein_stable_id", "species"), all.y = TRUE)
 
-data.table::fwrite(df, '../intermediate/comparaPlants_hc-to-ath.txt', sep = '\t')
-zip(zipfile = "../intermediate/comparaPlants_hc-to-ath.txt.zip", files = "../intermediate/comparaPlants_hc-to-ath.txt")
-file.remove("../intermediate/comparaPlants_hc-to-ath.txt")
+
+
+file_path = '../intermediate/comparaPlants_hc-to-ath.txt'
+data.table::fwrite(df, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 

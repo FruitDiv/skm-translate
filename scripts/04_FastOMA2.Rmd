@@ -108,9 +108,14 @@ dt = dt[!duplicated(dt), ]
 
 dt$source = 'FastOMA'
 
-data.table::fwrite(dt, '../intermediate/FastOMA2_ath-pairs.txt', sep = '\t')
-zip(zipfile = "../intermediate/FastOMA2_ath-pairs.txt.zip", files = "../intermediate/FastOMA2_ath-pairs.txt")
-file.remove("../intermediate/FastOMA2_ath-pairs.txt")
+file_path = '../intermediate/FastOMA2_ath-pairs.txt'
+data.table::fwrite(dt, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 

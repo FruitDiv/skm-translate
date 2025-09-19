@@ -147,9 +147,14 @@ cols_first = c(
 
 df.pairs = df.pairs[, cols_first]
 
-data.table::fwrite(df.pairs, '../intermediate/orthofinder_ath-within.txt', sep = '\t')
-zip(zipfile = "../intermediate/orthofinder_ath-within.txt.zip", files = "../intermediate/orthofinder_ath-within.txt")
-file.remove("../intermediate/orthofinder_ath-within.txt")
+file_path = "../intermediate/orthofinder_ath-within.txt"
+data.table::fwrite(df.pairs, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 
@@ -174,9 +179,15 @@ df_wide = df.compara %>%
     values_fill = NA
   )
 
-data.table::fwrite(df_wide, '../intermediate/orthofinder_ath-within_compara-wide.txt', sep = '\t')
-zip(zipfile = "../intermediate/orthofinder_ath-within_compara-wide.txt.zip", files = "../intermediate/orthofinder_ath-within_compara-wide.txt")
-file.remove("../intermediate/orthofinder_ath-within_compara-wide.txt")
+
+file_path = "../intermediate/orthofinder_ath-within_compara-wide.txt"
+data.table::fwrite(df_wide, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 
@@ -200,9 +211,15 @@ df_wide = df.plaza %>%
     values_fill = NA
   )
 
-data.table::fwrite(df_wide, '../intermediate/orthofinder_ath-within_plaza-wide.txt', sep = '\t')
-zip(zipfile = "../intermediate/orthofinder_ath-within_plaza-wide.txt.zip", files = "../intermediate/orthofinder_ath-within_plaza-wide.txt")
-file.remove("../intermediate/orthofinder_ath-within_plaza-wide.txt")
+
+file_path = '../intermediate/orthofinder_ath-within_plaza-wide.txt'
+data.table::fwrite(df_wide, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 
@@ -227,9 +244,15 @@ df_wide = df.orthodb %>%
     values_fill = NA
   )
 
-data.table::fwrite(df_wide, '../intermediate/orthofinder_ath-within_OrthoDB-wide.txt', sep = '\t')
-zip(zipfile = "../intermediate/orthofinder_ath-within_OrthoDB-wide.txt.zip", files = "../intermediate/orthofinder_ath-within_OrthoDB-wide.txt")
-file.remove("../intermediate/orthofinder_ath-within_OrthoDB-wide.txt")
+
+file_path = '../intermediate/orthofinder_ath-within_OrthoDB-wide.txt'
+data.table::fwrite(df_wide, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 ```
 

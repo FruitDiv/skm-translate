@@ -253,9 +253,14 @@ combo = combo[!duplicated(combo), ]
 table(combo$to_plant)
 
 
-data.table::fwrite(combo, '../intermediate/OrthoDB_fruitdiv.txt', sep = '\t')
-zip(zipfile = "../intermediate/OrthoDB_fruitdiv.txt.zip", files = "../intermediate/OrthoDB_fruitdiv.txt")
-file.remove("../intermediate/OrthoDB_fruitdiv.txt")
+file_path = '../intermediate/OrthoDB_fruitdiv.txt'
+data.table::fwrite(combo, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 
 ```

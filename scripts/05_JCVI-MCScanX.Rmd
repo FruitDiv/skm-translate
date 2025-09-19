@@ -125,9 +125,14 @@ df = df[!duplicated(df), ]
 
 
 
-data.table::fwrite(df, '../intermediate/JCVI_MCScanX_plants.txt', sep = '\t')
-zip(zipfile = "../intermediate/JCVI_MCScanX_plants.txt.zip", files = "../intermediate/JCVI_MCScanX_plants.txt")
-file.remove("../intermediate/JCVI_MCScanX_plants.txt")
+file_path = '../intermediate/JCVI_MCScanX_plants.txt'
+data.table::fwrite(df, file_path, sep = '\t')
+root_dir = dirname(file_path)
+file_name = basename(file_path)
+zip::zip(zipfile = paste0(file_path, ".zip"), 
+    files = file_name, 
+    root = root_dir)
+file.remove(file_path)
 
 
 ```
