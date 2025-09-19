@@ -128,7 +128,7 @@ combined_results = combined_results[!duplicated(combined_results), ]
 table(combined_results$to_plant)
 
 
-file_path = '../intermediate/RBH_fruitdiv.txt'
+file_path = '../intermediate/RBH_fruitTrees.txt'
 data.table::fwrite(combined_results, file_path, sep = '\t')
 root_dir = dirname(file_path)
 file_name = basename(file_path)

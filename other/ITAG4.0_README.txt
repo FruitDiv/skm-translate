@@ -1,0 +1,49 @@
+ITAG4.0 Tomato Genome Annotation Release
+
+Contents:
+	1. Introduction
+	2. Change log
+	3. Files in this release
+
+== 1. Introduction ==
+
+ITAG4.0 release of new annotation on the tomato genome assembly SL4.0 assembled from long reads. This release includes 34,075 gene models.
+
+Release Date: Sep 6, 2019
+
+== 2. Change log ==
+
+Following are the changes in ITAG4.0 compared to ITAG2.40.
+Number of ITAG2.4 genes preserved    =	 29,281
+Number of dropped genes		     =	  5,444
+Number of updated genes		     =	 21,375
+Number of novel genes		     =	  4,794
+
+== 3. Files in this release ==
+*	ITAG4.0_CDS.fasta
+	fasta-format sequence file of CDS sequences.
+
+*	ITAG4.0_cDNA.fasta
+	fasta-format sequence file of cDNA sequences.
+
+*	ITAG4.0_gene_models.gff
+	GFF version 3 file containing gene models in this release. 
+
+*	ITAG4.0_proteins.fasta
+	fasta-format sequence file of protein sequences.
+
+*	ITAG4.0_REPET_repeats_agressive.gff
+	GFF version 3 file containing repetitive regions. This contains repeats identified by REPET
+	pipeline and contains comprehensive repeat annotation.
+
+*	ITAG4.0_RepeatModeler_repeats_light.gff
+	GFF version 3 file containing repetitive regions. ITAG4.0 protein-coding gene models were
+	identified after masking genome with this file. This contains repeats identified by RepeatMasker
+	using RepeatModeler generated custom repeat library. Known proteins were identified in the repeat
+	library to improve chances of protein-coding gene identification.
+
+*       ITAG4.0_RepeatModeler_repeats_light.classified
+	Tabular file with repeat classification
+
+*	solcap.SL4.0gff
+	GFF version 3 file containing the Solcap markers on SL4.0

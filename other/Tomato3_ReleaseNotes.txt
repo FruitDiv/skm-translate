@@ -1,0 +1,250 @@
+*************
+Release notes
+*************
+
+Version 3.0 (2017-02-01)
+=========================
+
+Changes
+-------
+Full-length phase htgs3 BACs were integrated to create SL3.0.
+Bionano optical maps were used to validate assembly structure.
+Following are the details of assembly updates in SL3.0.
+
+BAC integration:
+	1,069 full-length phase htgs3 BACs integrated and
+    	~11Mb of contig gaps removed
+Optical map validation:
+	Chr00 contigs were integrated in Chr02 and Chr09
+	3 inversions were corrected in chromosome 12
+	19 gaps were resized using optical maps
+
+Version 2.50 (2014-02-23)
+=========================
+
+Changes
+-------
+Using FISH results from Steven Stack, the tomato genome scaffolds from build 2.4 were re-ordered, 
+re-oriented, and gap sizes between scaffolds were set.  The citation for the FISH and optical mapping work is
+
+Lindsay A. Shearer, Lorinda K. Anderson, Hans de Jong, Sandra Smit, Jose Luis Goicoechea, Bruce A. Roe, Axin Hua, James J. Giovannoni, and Stephen M. Stack. 2014. Fluorescence in situ hybridization and optical mapping To correct scaffold arrangement in the tomato genome.G3 g3.114.011197; doi:10.1534/g3.114.011197 (http://www.g3journal.org/content/early/2014/05/30/g3.114.011197.abstract)
+
+Tiling Path Files (TPF) were modified using perl scripts in the Bio::GenomeUpdate package (authored by 
+Surya Saha and Jeremy Edwards at SGN) available at https://github.com/solgenomics/Bio-GenomeUpdate. 
+Accessioned Golden Path (AGP) and assembled chromosome and scaffold sequences were generated from the 
+TPFs by tools available through the NCBI Genome Reference Consortium (GRC). 
+
+Please note that ITAG2.4 corresponds to build 2.5 of the tomato genome and ITAG2.3
+corresponds to build 2.4. The genome release numbers and ITAG versions are not 
+synchronized.
+
+Version 2.40 (2011-02-02)
+=========================
+
+Changes
+-------
+In order to meet all of Genbank's requirements and to remove some remaining contamination, the following changes were made:
+
+* Gaps created during the clone-end scaffolding phase (60 Ns, but actually without a size estimate) have been changed to size 100 and type 'clone' in the AGP files, suggesting there is evidence linking a clone to sequence on both sides of the gap.
+* Scaffold-breaking gaps of size 100 have been changed to type 'contig' and the linkage is set to 'no' in the AGP files, which means the few places where scaffolds were linked by the physical maps can't be found back in the AGP files.
+* 4 contigs that were identified as completely mitochondrial have been removed.
+	- SL2.31ct07311 (SL2.31sc03785)
+	- SL2.31ct15354 (SL2.31sc04414)
+	- SL2.31ct21887 (SL2.31sc05620)
+	- SL2.31ct24035 (SL2.31sc05997)
+* 3 additional contigs with other contamination have been removed:
+	- SL2.31ct15290 (SL2.31sc04354): Cupriavidus metallidurans CH34
+	- SL2.31ct19589 (SL2.31sc04952): Methylobacterium extorquens AM1
+	- SL2.31ct20418 (SL2.31sc05165): Stenotrophomonas maltophilia K27
+
+The consequences of these changes are that in terms of content very little has changed with respect to v2.31, but that **the coordinates of most scaffolds and contigs along the chromosomes have changed**.  This was necessary to achieve compliance with GenBank's gap-size rules. A mapping between v2.31 and v2.40 is available upon request, but should be used with caution. An updated ITAG annotation for this assembly is forthcoming.
+
+Assembly stats
+--------------
+* Contigs (only the contigs that make up the scaffolds): 26,877 sequences, 737.6 Mb, 50% of assembly in 2,008 contigs of 87,006 bp or longer
+* Scaffolds: 3,223 sequences, 781.3 Mb, 50% of assembly in 17 scaffolds of 16.5 Mb or longer
+* Pseudomolecules: 12 chromosomes and "chromosome 0", 781.6 Mb. 91 scaffolds placed on chromosome 1 to 12, 53 of these are also oriented.
+
+Version 2.31 (2010-11-15)
+=========================
+
+Changes
+-------
+
+* Minor release.  Removed a small number of bacterial contamination regions not found in initial screens.
+* Use of N and U gaps is slightly irregular in the AGP files in this release: U gaps of size 60 were made by Bambus during long-range scaffolding, U gaps of size 100 are inter-scaffold breaks, and U gaps of other sizes were inserted by the contamination-removal procedure.  N gaps have an estimated size in principle, except for those caused by the removal of contamination.
+* Alterations were made such that **no base coordinates or sequence lengths of pseudomolecules or scaffolds have changed from version 2.30**, but some contig and scaffold sequences have been removed, and some contigs have been split and new gap regions have been masked with N's.  Thus, **annotations made on release 2.30 are compatible with release 2.31.**
+   - List of removed sequences:
+     ::
+
+      Contig name       Length  Apparent source
+      ---------------------------------------------------------
+      SL2.30ct15291     1374    Cupriavidus metallidurans CH34
+      SL2.30ct19590     845     Methylobacterium extorquens AM1
+      SL2.30ct20419     589     Stenotrophomonas maltophilia K27
+      SL2.30ct23156     885     Cupriavidus metallidurans CH34
+      SL2.30ct23157     920     Cupriavidus metallidurans CH34
+      SL2.30sc05735     (made up of SL2.30ct23156, SL2.30ct23157)
+      SL2.30ct25491     1530    Cupriavidus metallidurans CH34
+      SL2.30ct25492     979     Cupriavidus metallidurans CH34
+      SL2.30sc06272     (made up of SL2.30ct25491, SL2.30ct25492)
+
+   - List of masked intra-contig contamination regions.  Each region was removed in the AGP assembly specification by splitting the contig in question into "a" and "b" contigs, separated in by a gap of unknown size.  However, the gap was rendered in the pseudomolecule and scaffold sequences as a straightfoward N-masking in order to preserve the same base coordinates.
+     ::
+
+      Contig name       Length   Span(s)  Apparent source
+      ---------------------------------------------------
+      SL2.30ct00065     635729  197392..198729  IS10
+      SL2.30ct00740     1222316 613581..614918  IS10
+      SL2.30ct00776     460708  146204..147541  IS10
+      SL2.30ct00786     203134  186022..187359  IS10
+      SL2.30ct00922     367921  52103..53440    IS10
+      SL2.30ct01868     381909  218967..220304  IS10
+      SL2.30ct01872     156959  60079..61416    IS10
+      SL2.30ct02098     157403  86177..87514    IS10
+      SL2.30ct02163     241286  173867..175204  IS10
+      SL2.30ct07261     65722   51455..52792    IS10
+      SL2.30ct08948     179272  123585..124922  IS10
+      SL2.30ct15434     159207  113558..114895  IS10
+      SL2.30ct15856     299364  162938..164275  IS10
+      SL2.30ct16310     1111220 554078..555415  IS10
+      SL2.30ct16312     154369  93782..95119    IS10
+      SL2.30ct20049     561644  251867..253204  IS10
+      SL2.30ct20107     258382  37943..39280    IS10
+
+
+
+
+Version 2.30 (2010-08-09)
+=========================
+
+Changes
+-------
+* Sequenced BACs were integrated in the scaffolds of assembly version 2.10. 
+    - Version 548 of tomato BAC sequences (downloaded from SGN) was used as the basis for BAC integration. Phase 1 BACs (23.2 Mb) were excluded. Phase 2 and phase 3 BACs were assembled into contigs and further processed for the integration, resulting in 117.5 Mb of sequence.
+    - Out of the available 117.5 Mb of BAC sequence, 116.6 Mb was integrated. During the integration 4.5 Mb of Ns in the assembly were replaced by real DNA sequence. 
+    - For further information see the "BAC integration summary".
+* After the BAC integration the scaffolds were ordered and oriented on the 12 chromosomes using the two physical maps (Keygene WGP and Arizona SNaPshot), the Kazusa genetic map, and multiple FISH maps. 
+
+Technical details
+-----------------
+* The new scaffolds were placed and oriented on the 12 chromosomes by integration of the two physical maps (Keygene WGP and Arizona SNaPshot), the Kazusa genetic map, and multiple FISH maps.
+
+    - Where possible, the scaffolds were placed and oriented on one of the 12 chromosomes. Corresponding MULTI-FASTA and AGP files were produced. Unoriented scaffolds have "0" as orientation in the AGP files and have the "+" orientation in the corresponding FASTA files. Scaffolds linked by the physical maps have 'yes' in the linkage column in the AGP files. Gaps between adjacent scaffolds on chromosomes are of type 'U' (undefined size) and size 100 (following the NCBI specifications).
+    - Intra-scaffold gaps, linking two contigs, that were produced during clone-end scaffolding with Bambus, are of size 60 and type 'U'. The real size of these gaps are unknown.
+    - All scaffolds that could not be placed on either of the 12 tomato chromosomes by either the genetic or physical maps were placed on an artificial "chromosome 0". The scaffolds on this chromosome are ordered from large to small and unoriented.
+    - All sequences are in upper case.
+    - The orientation of all contigs in the scaffolds is always "+" because the contigs are reconstructed from the scaffolds.
+    - The orientation of all contigs in the chromosomes is either "+" or "-", never "0", as the contigs have an order and orientation in the scaffolds. 
+
+Assembly stats
+--------------
+* Contigs (only the contigs that make up the scaffolds): 26,874 sequences, 737.7 Mb, 50% of assembly in 1,996 contigs of 87,129 bp or longer
+* Scaffolds: 3,232 sequences, 781.4 Mb, 50% of assembly in 17 scaffolds of 16.5 Mb or longer
+* Pseudomolecules: 12 chromosomes and "chromosome 0", 781.7 Mb. 91 scaffolds placed on chromosome 1 to 12, 53 of these are also oriented.
+
+Version 2.10 (2010-06-25)
+=========================
+
+Changes
+-------
+* The scaffolds from assembly 1.50 were further linked together by the clone ends (BAC and fosmid)
+* The new scaffolds were placed and oriented on the 12 chromosomes by integration of the two physical maps (KeyGene WGP and Arizona SNaPshot), the Kazusa genetic map, and multiple FISH maps.
+
+    - Where possible, the scaffolds were placed and oriented on one of the 12 chromosomes. Corresponding MULTI-FASTA and AGP files were produced. Unoriented scaffolds have "0" as orientation in the AGP files and have the "+" orientation in the corresponding FASTA files. Scaffolds linked by the physical maps have 'yes' in the linkage column in the AGP files. Gaps between adjacent scaffolds on chromosomes are of type 'U' (undefined size) and size 100 (following the NCBI specifications).   
+    - All scaffolds that could not be placed on either of the 12 tomato chromosomes by either the genetic or physical maps were placed on an artificial "chromosome 0". The scaffolds on this chromosome are ordered from large to small and unoriented.
+    - All sequences are in upper case.
+    - The orientation of all contigs in the scaffolds is always "+" because the contigs are reconstructed from the scaffolds.
+    - The orientation of all contigs in the chromosomes is either "+" or "-", never "0", as the contigs have an order and orientation in the scaffolds. 
+
+Assembly stats
+--------------
+* Contigs (only the contigs that make up the scaffolds): 29,736 sequences, 733.0 Mb, 50% of assembly in 2,754 contigs of 69,257 bp or longer
+* Scaffolds: 3,433 sequences, 781.3 Mb, 50% of assembly in 17 scaffolds of 16.5 Mb or longer
+* Pseudomolecules: 12 chromosomes and "chromosome 0", 781.6 Mb
+
+
+Version 2.00 (2010-06-16)
+=========================
+Version 2.00 was retracted because of some technical errors in the data. Please do not use version 2.00 for any analysis.
+
+Version 1.50 (2010-05-14)
+=========================
+
+Changes
+-------
+* The contigs from assembly 1.03 were polished using the SOLiD data and SOLEXA data. Polishing included sinlge-base error correction and indel correction (mostly homopolymer).
+* Contamination from E.coli and vector sequences was removed. Organellar sequences were separated (and are thus not included in this data set).
+* Several structural inconsistencies were solved.
+* Contigs from fully sequenced BACs were integrated.
+* Superscaffolds were built using clone-end information (BAC and fosmid ends).
+* Several gaps were filled using the alternative CABOG assembly (same input as Newbler 1.03 and polished by the illumina kmers)
+
+Assembly stats
+--------------
+* Contigs (only the contigs that make up the scaffolds): 29,736 sequences, 733.0 Mb, 50% of assembly in 2,754 contigs of 69,257 bp or longer
+* Scaffolds: 3,584 sequences, 781.2 Mb, 50% of assembly in 27 scaffolds of 7.8 Mb or longer
+
+
+Version 1.03 (2010-01-22)
+=========================
+
+Changes
+-------
+* During the assembly we screened for E. coli sequences to prevent the E. coli contamination (from the SBM data) as found in version 1.0
+* Two new 454 runs (3kb and 20kb) were added to the assembly
+* This assembly was made with an updated version of the assembler
+
+Assembler
+---------
+* This assembly was made with Newbler version 2.3-PostRelease-01/11/2010
+
+Assembly input
+--------------
+* A new filtered 454 data set was created because of the addition of 2 new 454 runs (3kb and 20kb)
+	- 56 million reads, 20.8 Gb, approx. 22.0X coverage
+* SBM and clone-end input were the same as in version 1.00 (see below)
+
+Assembly stats
+--------------
+* Contigs: 110,872 sequences, 762.0 Mb, 50% of assembly in 3,641 contigs of 55,730 bp or longer
+* Scaffolds: 3,761 sequences, 781.7 Mb, 50% of assembly in 52 scaffolds of 4.4 Mb or longer
+
+
+Version 1.00 (2009-11-27)
+=========================
+
+Assembler
+---------
+* This assembly was made with newbler version 2.3-PostRelease-11/19/2009
+
+Assembly input
+--------------
+* This assembly contains 454 sequences, Selected BAC clone Mixture (SBM) sequences, and BAC/fosmid end sequences. 
+    - 454 (filtered): 55 million reads, 20.5 Gb, approx. 21.6X coverage
+    - SBM (filtered): 3.8 million reads, 3.1 Gb, approx. 3.3X coverage
+    - BAC ends (filtered): 308,490 sequences (incl. 135,271 pairs), 180 Mb, approx. 0.18X coverage
+    - Fosmid ends (filtered): 151,299 sequences (incl. 64,722 pairs), 83 Mb, approx. 0.087X coverage
+
+
+Assembly stats
+--------------
+* Contigs: 118,692 sequences, 762.5 Mb, 50% of assembly in 4,238 contigs of 47,298 bp or longer
+* Scaffolds: 7,409 sequences, 794.6 Mb, 50% of assembly in 50 scaffolds of 4.5 Mb or longer
+
+
+Raw data
+========
+* 454
+	- approx. 80 runs, 78.6 million reads, 27.7 Gb, approx. 29.2X coverage
+	- Data sequenced with the GS FLX Titanium
+	- Approx. 39 runs from WGS libraries, 19 runs from 3 Kb libraries, 12 runs from 8 Kb libraries, and 10 runs from 20Kb libraries, resulting in approx. 20 Gb from WGS reads and 8.3 Gb from paired-end reads
+* SBM (=Selected BAC clone Mixture)
+	- 4,039,383 sequences, 4.9 Gb, approx. 5.2X coverage
+	- Shotgun sequencing from BAC clone pools, using the BAC end sequences available at the SGN website
+	- http://www.kazusa.or.jp/tomato/
+* BAC ends: 309,305 sequences, 180 Mb, approx. 0.19X coverage
+	- BAC ends come from 3 enzyme libraries (HindIII, MboI, EcoRI)
+* Fosmid ends: 151,301 sequences, 83 Mb, approx. 0.08X coverage
+* SOLiD: 2 runs 1kb, 2 runs 5kb, 2 runs 10kb, 2 runs 7kb (forward only)
+	- The SOLiD data has not been used in the assembly yet (up to version 1.03)

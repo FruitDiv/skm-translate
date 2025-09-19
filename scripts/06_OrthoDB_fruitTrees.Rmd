@@ -253,7 +253,7 @@ combo = combo[!duplicated(combo), ]
 table(combo$to_plant)
 
 
-file_path = '../intermediate/OrthoDB_fruitdiv.txt'
+file_path = '../intermediate/OrthoDB_fruitTrees.txt'
 data.table::fwrite(combo, file_path, sep = '\t')
 root_dir = dirname(file_path)
 file_name = basename(file_path)

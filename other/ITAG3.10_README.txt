@@ -1,0 +1,38 @@
+ITAG3.10 Tomato Genome Annotation Release
+
+Contents:
+	1. Introduction
+	2. Change log
+	3. Files in this release
+
+== 1. Introduction ==
+
+ITAG3.10 release of new annotation on the tomato genome assembly SL3.0. This release includes 34,879 gene models.
+
+Release Date: March 3, 2017
+
+== 2. Change log ==
+
+Following are the changes in ITAG3.10 compared to ITAG3.0.
+
+Number of fused genes corrected = 107
+Number of split gene models added  = 225
+
+== 3. Files in this release ==
+*	ITAG3.10_CDS.fasta
+	fasta-format sequence file of CDS sequences.
+
+*	ITAG3.10_cDNA.fasta
+	fasta-format sequence file of cDNA sequences.
+
+*	ITAG3.10_gene_models.gff
+	GFF version 3 file containing gene models in this release. 
+
+*	ITAG3.10_proteins.fasta
+	fasta-format sequence file of protein sequences.
+
+*	ITAG3.10_proteins_full_desc.fasta
+	fasta-format sequence file of protein sequences with full description.
+
+*	ITAG3.10_split_fused_gene_models.txt
+	List of split genes added in ITAG3.10 which are fused in ITAG3.0.

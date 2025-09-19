@@ -1,0 +1,36 @@
+ITAG4.1 Tomato Genome Annotation Release
+
+Contents:
+	1. Introduction
+	2. Change log
+	3. Files in this release
+
+== 1. Introduction ==
+
+ITAG4.1 release of new annotation on the tomato genome assembly SL4.0 assembled from long reads. This release includes 34,688 gene models.
+
+Release Date: Jan 28, 2020
+
+== 2. Change log ==
+
+Following are the changes in ITAG4.0 compared to ITAG2.40.
+Number of ITAG2.4 genes preserved    =	 29,281 (to be updated) 
+Number of dropped genes		     =    5,444 (to be updated)
+Number of updated genes		     =	 21,375 (to be updated)
+Number of novel genes		     =	  6,476
+
+== 3. Files in this release ==
+*	ITAG4.1_CDS.fasta
+	fasta-format sequence file of CDS sequences.
+
+*	ITAG4.1_cDNA.fasta
+	fasta-format sequence file of cDNA sequences.
+
+*	ITAG4.1_gene_models.gff
+	GFF version 3 file containing gene models in this release. 
+
+*	ITAG4.1_proteins.fasta
+	fasta-format sequence file of protein sequences.
+
+*	ITAG4.1_TF_TR.txt
+	List of transcription factors (TFs) and transcriptional regulators (TRs) predicted by  iTAK pipeline (http://itak.feilab.net/cgi-bin/itak/index.cgi)
