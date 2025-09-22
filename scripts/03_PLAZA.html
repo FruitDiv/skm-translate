@@ -11,7 +11,7 @@
 
 <meta name="author" content="zagor" />
 
-<meta name="date" content="2025-09-19" />
+<meta name="date" content="2025-09-22" />
 
 <title>03_PLAZA</title>
 
@@ -1316,8 +1316,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -1328,7 +1329,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -1570,7 +1571,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">03_PLAZA</h1>
 <h4 class="author">zagor</h4>
-<h4 class="date">2025-09-19</h4>
+<h4 class="date">2025-09-22</h4>
 
 </div>
 
@@ -1578,12 +1579,14 @@ border-radius: 0px;
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>(<span class="at">all =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells  554643 29.7    1241465 66.4   686457 36.7
-## Vcells 1015341  7.8    8388608 64.0  1876634 14.4</code></pre>
+## Ncells  625045 33.4    1434818 76.7   702048 37.5
+## Vcells 1171456  9.0    8388608 64.0  1927980 14.8</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">setwd</span>(<span class="fu">dirname</span>(rstudioapi<span class="sc">::</span><span class="fu">getActiveDocumentContext</span>()<span class="sc">$</span>path))</span></code></pre></div>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="st">`</span><span class="at">%nin%</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">Negate</span>(<span class="st">`</span><span class="at">%in%</span><span class="st">`</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="fu">setwd</span>(<span class="fu">dirname</span>(rstudioapi<span class="sc">::</span><span class="fu">getActiveDocumentContext</span>()<span class="sc">$</span>path))</span></code></pre></div>
 <p>Michiel Van Bel, Francesca Silvestri, Eric M Weitz, Lukasz Kreft,
 Alexander Botzki, Frederik Coppens, Klaas Vandepoele, PLAZA 5.0:
 extending the scope and power of comparative and functional genomics in
@@ -1618,45 +1621,203 @@ gene family</li>
 </ul></li>
 </ul></li>
 </ul>
-<div id="plant-selection" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> plant selection</h1>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>fp <span class="ot">=</span> <span class="fu">file.path</span>(<span class="st">&#39;..&#39;</span>, <span class="st">&#39;input&#39;</span>, <span class="st">&#39;PLAZA&#39;</span>)</span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># remove all whitespace characters (\s), double quotes (&quot;) and single quotes (&#39;) from each string in x using gsub; replace any string that exactly matches &quot;NULL&quot; with NA</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>species <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;ath&#39;</span>, </span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>            <span class="st">&#39;mdo&#39;</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>            <span class="st">&#39;ppe&#39;</span>, </span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>            <span class="st">&#39;sly&#39;</span>, </span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>            <span class="st">&#39;stu&#39;</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>            <span class="st">&#39;vvi&#39;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>clean_text <span class="ot">=</span> <span class="cf">function</span>(x) {</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.character</span>(x)) {</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="co"># Remove all whitespace and quotes</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>    cleaned <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;[</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\&quot;</span><span class="st">&#39;]&quot;</span>, <span class="st">&quot;&quot;</span>, x, <span class="at">perl =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="co"># Replace &quot;NULL&quot; with NA</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    <span class="fu">ifelse</span>(cleaned <span class="sc">==</span> <span class="st">&quot;NULL&quot;</span>, <span class="cn">NA</span>, cleaned)</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    x</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  }</span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>clean_text <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.character</span>(x)) {</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="co"># Remove all whitespace and quotes</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    cleaned <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">&quot;[</span><span class="sc">\\</span><span class="st">s</span><span class="sc">\&quot;</span><span class="st">&#39;]&quot;</span>, <span class="st">&quot;&quot;</span>, x, <span class="at">perl =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    <span class="co"># Replace &quot;NULL&quot; with NA</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    <span class="fu">ifelse</span>(cleaned <span class="sc">==</span> <span class="st">&quot;NULL&quot;</span>, <span class="cn">NA</span>, cleaned)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>    x</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  }</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>}</span></code></pre></div>
+<div id="stu-exception" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> stu exception</h1>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># download and read Excel files</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>read_excel_from_url <span class="ot">&lt;-</span> <span class="cf">function</span>(url, <span class="at">start_row =</span> <span class="dv">1</span>, <span class="at">columns =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  temp_file <span class="ot">=</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.xlsx&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  utils<span class="sc">::</span><span class="fu">download.file</span>(url, <span class="at">destfile =</span> temp_file, <span class="at">mode =</span> <span class="st">&quot;wb&quot;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  data <span class="ot">=</span> openxlsx<span class="sc">::</span><span class="fu">read.xlsx</span>(temp_file, <span class="at">startRow =</span> start_row)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(columns)) data <span class="ot">=</span> data[, columns]</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="fu">return</span>(data)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>}</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co"># DMT2DMG in unitato</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>dmt_url <span class="ot">=</span> <span class="st">&quot;https://raw.githubusercontent.com/NIB-SI/unitato/main/output/Phureja_v4-v6.1_annotations.xlsx&quot;</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>dmt_cols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;geneID&quot;</span>, <span class="st">&quot;v4_PGSC_DMT&quot;</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>dmt_data <span class="ot">=</span> <span class="fu">read_excel_from_url</span>(dmt_url, <span class="at">start_row =</span> <span class="dv">3</span>, <span class="at">columns =</span> dmt_cols)</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>dmt_data <span class="ot">=</span> dmt_data[<span class="sc">!</span><span class="fu">is.na</span>(dmt_data<span class="sc">$</span>v4_PGSC_DMT), ]</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setDT</span>(dmt_data)</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>dmt_data.unitato <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">copy</span>(dmt_data)</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co"># converter table</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>zip_url <span class="ot">=</span> <span class="st">&quot;https://github.com/NIB-SI/unitato/raw/main/input/Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt.zip&quot;</span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>zip_file <span class="ot">=</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.zip&quot;</span>)</span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>temp_dir <span class="ot">=</span> <span class="fu">tempdir</span>()</span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">download.file</span>(zip_url, zip_file, <span class="at">mode =</span> <span class="st">&quot;wb&quot;</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">unzip</span>(zip_file, <span class="at">exdir =</span> temp_dir)</span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>converter_file <span class="ot">=</span> <span class="fu">file.path</span>(temp_dir, <span class="st">&quot;Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt&quot;</span>)</span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>converter_data <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(converter_file, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">header =</span> <span class="cn">FALSE</span>, <span class="at">fill =</span> <span class="cn">TRUE</span>, <span class="at">quote =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>converter_data <span class="ot">=</span> converter_data[, .(V1, V2)]</span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setnames</span>(converter_data, <span class="fu">names</span>(dmt_data))</span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a>dmt_data <span class="ot">=</span> <span class="fu">unique</span>(<span class="fu">rbind</span>(dmt_data, converter_data))</span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setnames</span>(dmt_data, <span class="fu">c</span>(<span class="st">&quot;sourceID&quot;</span>, <span class="st">&quot;Ortholog&quot;</span>))</span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co"># Load and clean translation table</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a>trans_url <span class="ot">=</span> <span class="st">&quot;https://raw.githubusercontent.com/NIB-SI/unitato/main/output/Phureja_v4-v6.1_translations.xlsx&quot;</span></span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a>trans_cols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;v4_geneID&quot;</span>, <span class="st">&quot;v6.1_geneID&quot;</span>)</span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a>trans_data <span class="ot">=</span> <span class="fu">read_excel_from_url</span>(trans_url, <span class="at">start_row =</span> <span class="dv">2</span>, <span class="at">columns =</span> trans_cols)</span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="fu">colnames</span>(trans_data) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;Ortholog&quot;</span>, <span class="st">&quot;sourceID&quot;</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a>trans_data <span class="ot">=</span> trans_data[<span class="fu">grep</span>(<span class="st">&quot;PGSC&quot;</span>, trans_data<span class="sc">$</span>Ortholog), ]</span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a><span class="co"># unitato table ++</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>dmt_data <span class="ot">=</span> dmt_data[sourceID <span class="sc">%nin%</span> trans_data<span class="sc">$</span>Ortholog]</span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>dmt_data[, Ortholog <span class="sc">:=</span> sourceID]</span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>unitato <span class="ot">=</span> <span class="fu">rbind</span>(trans_data, dmt_data)</span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a>unitato <span class="ot">=</span> unitato[]</span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setDT</span>(unitato)</span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a>unitato <span class="ot">&lt;-</span> unitato[, .(sourceID, Ortholog)]</span>
+<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a>lost <span class="ot">=</span> <span class="fu">setdiff</span>(<span class="fu">grep</span>(<span class="st">&quot;PGSC&quot;</span>, unitato<span class="sc">$</span>sourceID, <span class="at">value =</span> <span class="cn">TRUE</span>), dmt_data.unitato<span class="sc">$</span>geneID)</span>
+<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">grep</span>(<span class="st">&quot;PGSC&quot;</span>, unitato<span class="sc">$</span>sourceID, <span class="at">value =</span> <span class="cn">TRUE</span>) <span class="sc">%in%</span> dmt_data.unitato<span class="sc">$</span>geneID)</span></code></pre></div>
+<pre><code>## 
+## FALSE  TRUE 
+##   245 12068</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>unitato <span class="ot">=</span> unitato[unitato<span class="sc">$</span>Ortholog <span class="sc">%nin%</span> lost, ]</span></code></pre></div>
 </div>
-<div id="trog" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> trog</h1>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>fn <span class="ot">=</span> <span class="st">&#39;integrative_orthology.TROG.csv.gz&#39;</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>dt <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="fu">file.path</span>(fp, fn) , <span class="at">skip =</span> <span class="dv">2</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
+<div id="params" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> params</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>params_list <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;stu&#39;</span>, </span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>       <span class="at">stp =</span> <span class="st">&#39;stu&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>       <span class="at">ref_genome =</span> <span class="st">&quot;UniTato_pep_oneliner&quot;</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>       <span class="at">plaza_genome =</span> <span class="st">&quot;PLAZA_proteome.selected_transcript.stu&quot;</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>       <span class="at">pdir =</span> <span class="st">&quot;stu_potato&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>       <span class="co"># ,</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>       <span class="co"># from_sub_pattern = NULL,</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>       <span class="co"># to_sub_pattern = &quot;(\\.[0-9]+)+$&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>       ),</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;sly&#39;</span>, </span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>       <span class="at">stp =</span> <span class="st">&#39;sly&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>       <span class="at">ref_genome =</span> <span class="st">&quot;Phytozome_Slycopersicum_796_ITAG5.0.protein_primaryTranscriptOnly&quot;</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>       <span class="at">plaza_genome =</span> <span class="st">&quot;PLAZA_proteome.selected_transcript.sly&quot;</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>       <span class="at">pdir =</span> <span class="st">&quot;sly_tomato&quot;</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>       <span class="at">from_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[0-9]+$&quot;</span>, <span class="co"># &quot;(\\.[^.]+){2}$&quot;,</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;(</span><span class="sc">\\</span><span class="st">.[0-9]+)+$&quot;</span>), </span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;vvi&#39;</span>, </span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>       <span class="at">stp =</span> <span class="st">&#39;vvi&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>       <span class="at">ref_genome =</span> <span class="st">&quot;Grapedia_5.1_on_T2T_ref_main_proteins&quot;</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>       <span class="at">plaza_genome =</span> <span class="st">&quot;PLAZA_PN40024-Genoscope-12.xproteome.selected_transcript.vvi&quot;</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>       <span class="at">pdir =</span> <span class="st">&quot;vvi_grapevine&quot;</span>,</span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>       <span class="at">from_sub_pattern =</span> <span class="st">&quot;.*</span><span class="sc">\\</span><span class="st">s&quot;</span>,</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;(_[^_]*){2}$&quot;</span>), <span class="co"># everythin after the last dot</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>    </span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;mdo&#39;</span>, </span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a>       <span class="at">stp =</span> <span class="st">&#39;mdo&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a>       <span class="at">ref_genome =</span> <span class="st">&quot;g.Honeycrisp_HAP1_braker1+2_combined_fullSupport_longname_filtered.pep&quot;</span>,</span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a>       <span class="at">plaza_genome =</span> <span class="st">&quot;PLAZA_proteome.selected_transcript.mdo&quot;</span>,</span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a>       <span class="at">pdir =</span> <span class="st">&quot;mdo_apple&quot;</span>,</span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a>       <span class="co"># from_sub_pattern = NULL,</span></span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>),</span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a>  </span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;ppe&#39;</span>, </span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a>       <span class="at">stp =</span> <span class="st">&#39;ppe&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a>       <span class="at">ref_genome =</span> <span class="st">&quot;PLAZA_proteome.selected_transcript.ppe&quot;</span>,</span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a>       <span class="at">plaza_genome =</span> <span class="st">&quot;PLAZA_proteome.selected_transcript.ppe&quot;</span>,</span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a>       <span class="at">pdir =</span> <span class="st">&quot;ppe_peach&quot;</span>,</span>
+<span id="cb8-39"><a href="#cb8-39" tabindex="-1"></a>       <span class="at">from_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>,</span>
+<span id="cb8-40"><a href="#cb8-40" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>) <span class="co"># everythin after the last dot</span></span>
+<span id="cb8-41"><a href="#cb8-41" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" tabindex="-1"></a>  </span>
+<span id="cb8-43"><a href="#cb8-43" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="orthofinder---within" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> orthofinder -
+within</h1>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Function to process one parameter set</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>process_param <span class="ot">&lt;-</span> <span class="cf">function</span>(param) {</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  </span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  stp <span class="ot">=</span> param<span class="sc">$</span>stp</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="fu">print</span>(stp)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  ref_genome <span class="ot">=</span> <span class="fu">paste0</span>(param<span class="sc">$</span>ref_genome, <span class="st">&#39;.tsv&#39;</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  plaza_genome <span class="ot">=</span> param<span class="sc">$</span>plaza_genome</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  to_sub_pattern <span class="ot">=</span> param<span class="sc">$</span>to_sub_pattern</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  from_sub_pattern <span class="ot">=</span> param<span class="sc">$</span>from_sub_pattern</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  pdir <span class="ot">=</span> param<span class="sc">$</span>pdir</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  </span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>  <span class="cf">if</span> (stp <span class="sc">==</span> <span class="st">&quot;stu&quot;</span>) { <span class="co"># potato exception</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>    result <span class="ot">=</span> unitato</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    </span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>    files <span class="ot">=</span> <span class="fu">list.files</span>(<span class="fu">file.path</span>(<span class="st">&quot;..&quot;</span>, <span class="st">&quot;input&quot;</span>, <span class="st">&quot;OrthoFinder&quot;</span>, pdir))</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>    fn <span class="ot">=</span> <span class="fu">grep</span>(ref_genome, files, <span class="at">value =</span> <span class="cn">TRUE</span>, <span class="at">fixed =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>    </span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>    plaza <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="fu">file.path</span>(<span class="st">&quot;..&quot;</span>, <span class="st">&quot;input&quot;</span>, <span class="st">&quot;OrthoFinder&quot;</span>, pdir, fn), <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>    </span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>    data.table<span class="sc">::</span><span class="fu">setnames</span>(plaza, <span class="at">old =</span> <span class="fu">colnames</span>(plaza)[<span class="dv">3</span>], <span class="at">new =</span> <span class="st">&quot;reference&quot;</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>    </span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">grepl</span>(plaza_genome, ref_genome)) {</span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a>      plaza <span class="ot">=</span> plaza[Species <span class="sc">==</span> plaza_genome]</span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>      plaza[, Orthologs <span class="sc">:=</span> reference]</span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a>    }</span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a>    </span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a>    plaza[, source_list <span class="sc">:=</span> stringr<span class="sc">::</span><span class="fu">str_split</span>(reference, <span class="at">pattern =</span> <span class="st">&quot;,</span><span class="sc">\\</span><span class="st">s*&quot;</span>)]</span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a>    plaza[, orthologs_list <span class="sc">:=</span> stringr<span class="sc">::</span><span class="fu">str_split</span>(Orthologs, <span class="at">pattern =</span> <span class="st">&quot;,</span><span class="sc">\\</span><span class="st">s*&quot;</span>)]</span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a>    </span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>    result <span class="ot">=</span> plaza[, {</span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a>      pairs <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">CJ</span>(source_list[[<span class="dv">1</span>]], orthologs_list[[<span class="dv">1</span>]], <span class="at">sorted =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a>      data.table<span class="sc">::</span><span class="fu">setnames</span>(pairs, <span class="fu">c</span>(<span class="st">&quot;sourceID&quot;</span>, <span class="st">&quot;Ortholog&quot;</span>))</span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a>      pairs</span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a>    }, by <span class="ot">=</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(plaza))]</span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a>    result[, seq_len <span class="sc">:=</span> <span class="cn">NULL</span>]</span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a>    </span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(to_sub_pattern)) {</span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a>      result[, sourceID <span class="sc">:=</span> <span class="fu">gsub</span>(to_sub_pattern, <span class="st">&quot;&quot;</span>, sourceID)]</span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a>    }</span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(from_sub_pattern)) {</span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a>      result[, Ortholog <span class="sc">:=</span> <span class="fu">gsub</span>(from_sub_pattern, <span class="st">&quot;&quot;</span>, Ortholog)]</span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a>    } </span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a>  }</span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a>    </span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a>  result<span class="sc">$</span>to_plant <span class="ot">=</span> stp</span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a>  <span class="fu">unique</span>(result)</span>
+<span id="cb9-51"><a href="#cb9-51" tabindex="-1"></a>  </span>
+<span id="cb9-52"><a href="#cb9-52" tabindex="-1"></a>}</span>
+<span id="cb9-53"><a href="#cb9-53" tabindex="-1"></a></span>
+<span id="cb9-54"><a href="#cb9-54" tabindex="-1"></a><span class="co"># Use lapply to process list</span></span>
+<span id="cb9-55"><a href="#cb9-55" tabindex="-1"></a>reference_list <span class="ot">=</span> <span class="fu">lapply</span>(params_list, process_param)</span></code></pre></div>
+<pre><code>## [1] &quot;stu&quot;
+## [1] &quot;sly&quot;
+## [1] &quot;vvi&quot;
+## [1] &quot;mdo&quot;
+## [1] &quot;ppe&quot;</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>reference <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">rbindlist</span>(reference_list)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">rm</span>(reference_list)</span></code></pre></div>
+</div>
+<div id="trog" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> trog</h1>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>fp <span class="ot">=</span> <span class="fu">file.path</span>(<span class="st">&#39;..&#39;</span>, <span class="st">&#39;input&#39;</span>, <span class="st">&#39;PLAZA&#39;</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>fn <span class="ot">=</span> <span class="st">&#39;integrative_orthology.TROG.csv.gz&#39;</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>dt <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="fu">file.path</span>(fp, fn) , <span class="at">skip =</span> <span class="dv">2</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##              used   (Mb) gc trigger    (Mb)   max used   (Mb)
-## Ncells    2643967  141.3    5204604   278.0    2648763  141.5
-## Vcells 1261770293 9626.6 1811520610 13820.9 1262317286 9630.8</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">colnames</span>(dt) <span class="ot">=</span> <span class="fu">sub</span>(<span class="st">&#39;</span><span class="sc">\\</span><span class="st">#&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="fu">colnames</span>(dt))</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>df <span class="ot">=</span> dt[dt<span class="sc">$</span>query_species <span class="sc">%in%</span> species <span class="sc">&amp;</span> dt<span class="sc">$</span>orthologous_species <span class="sc">%in%</span> species, ]</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="fu">rm</span>(dt)</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
+## Ncells    2990457  159.8    5689520   303.9    3836457  204.9
+## Vcells 1265712181 9656.7 1817441889 13866.0 1266779508 9664.8</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">colnames</span>(dt) <span class="ot">=</span> <span class="fu">sub</span>(<span class="st">&#39;</span><span class="sc">\\</span><span class="st">#&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="fu">colnames</span>(dt))</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>species <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;ath&#39;</span>, <span class="fu">sapply</span>(params_list, <span class="cf">function</span>(x) x<span class="sc">$</span>stp))</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>df <span class="ot">=</span> dt[dt<span class="sc">$</span>query_species <span class="sc">%in%</span> species <span class="sc">&amp;</span> dt<span class="sc">$</span>orthologous_species <span class="sc">%in%</span> species, ]</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="fu">rm</span>(dt)</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger    (Mb)   max used    (Mb)
-## Ncells  974950 52.1    4163684   222.4    2678762   143.1
-## Vcells 5707801 43.6 1739123786 13268.5 1728587664 13188.1</code></pre>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(df, clean_text), <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>query_species, df<span class="sc">$</span>orthologous_species)</span></code></pre></div>
+## Ncells 1296209 69.3    4551616   243.1    3836457   204.9
+## Vcells 9589594 73.2 1744808213 13311.9 1852098275 14130.4</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">as.data.frame</span>(<span class="fu">lapply</span>(df, clean_text), <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>query_species, df<span class="sc">$</span>orthologous_species)</span></code></pre></div>
 <pre><code>##      
 ##         ath   mdo   ppe   sly   stu   vvi
 ##   ath 17868 26948 16789 20231 19382 15183
@@ -1665,8 +1826,8 @@ gene family</li>
 ##   sly 20399 26036 16161 17657 16690 15221
 ##   stu 19046 24666 15425 16833 29011 14303
 ##   vvi 15847 21162 13318 15445 14862 14227</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>df <span class="ot">=</span> df[df<span class="sc">$</span>query_species <span class="sc">!=</span> df<span class="sc">$</span>orthologous_species, ]</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>query_species, df<span class="sc">$</span>orthologous_species)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>df <span class="ot">=</span> df[df<span class="sc">$</span>query_species <span class="sc">!=</span> df<span class="sc">$</span>orthologous_species, ]</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>query_species, df<span class="sc">$</span>orthologous_species)</span></code></pre></div>
 <pre><code>##      
 ##         ath   mdo   ppe   sly   stu   vvi
 ##   ath     0 26948 16789 20231 19382 15183
@@ -1675,75 +1836,181 @@ gene family</li>
 ##   sly 20399 26036 16161     0 16690 15221
 ##   stu 19046 24666 15425 16833     0 14303
 ##   vvi 15847 21162 13318 15445 14862     0</code></pre>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>ind1 <span class="ot">=</span> <span class="fu">grep</span>(<span class="st">&quot;ath&quot;</span>, df<span class="sc">$</span>query_species, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>ind2 <span class="ot">=</span> <span class="fu">grep</span>(<span class="st">&quot;ath&quot;</span>, df<span class="sc">$</span>orthologous_species, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>df_sub1 <span class="ot">=</span> df[ind1, ]</span>
-<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>df_sub2 <span class="ot">=</span> df[ind2, ]</span>
-<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>columns <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;orthologous_gene&quot;</span>, <span class="st">&quot;orthologous_species&quot;</span>, <span class="st">&quot;query_gene&quot;</span>, <span class="st">&quot;query_species&quot;</span>)</span>
-<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>df_sub2 <span class="ot">=</span> df_sub2[, columns]</span>
-<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="fu">colnames</span>(df_sub2) <span class="ot">=</span> <span class="fu">colnames</span>(df_sub1)</span>
-<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>dt <span class="ot">=</span> <span class="fu">rbind</span>(df_sub1, df_sub2)</span>
-<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="fu">table</span>(dt<span class="sc">$</span>query_species, dt<span class="sc">$</span>orthologous_species)</span></code></pre></div>
-<pre><code>##      
-##         mdo   ppe   sly   stu   vvi
-##   ath 55904 35175 40630 38428 31030</code></pre>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>dt <span class="ot">=</span> dt[<span class="sc">!</span><span class="fu">duplicated</span>(dt), ]</span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">table</span>(dt<span class="sc">$</span>query_species, dt<span class="sc">$</span>orthologous_species)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>ind1 <span class="ot">=</span> <span class="fu">grep</span>(<span class="st">&quot;ath&quot;</span>, df<span class="sc">$</span>query_species, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>ind2 <span class="ot">=</span> <span class="fu">grep</span>(<span class="st">&quot;ath&quot;</span>, df<span class="sc">$</span>orthologous_species, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>df_sub1 <span class="ot">=</span> df[ind1, ]</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>df_sub2 <span class="ot">=</span> df[ind2, ]</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>columns <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;orthologous_gene&quot;</span>, <span class="st">&quot;orthologous_species&quot;</span>, <span class="st">&quot;query_gene&quot;</span>, <span class="st">&quot;query_species&quot;</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>df_sub2 <span class="ot">=</span> df_sub2[, columns]</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="fu">colnames</span>(df_sub2) <span class="ot">=</span> <span class="fu">colnames</span>(df_sub1)</span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a>dt <span class="ot">=</span> <span class="fu">rbind</span>(df_sub1, df_sub2)</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a>dt <span class="ot">=</span> dt[<span class="sc">!</span><span class="fu">duplicated</span>(dt), ]</span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a><span class="fu">table</span>(dt<span class="sc">$</span>query_species, dt<span class="sc">$</span>orthologous_species)</span></code></pre></div>
 <pre><code>##      
 ##         mdo   ppe   sly   stu   vvi
 ##   ath 33104 20774 24330 23228 18663</code></pre>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>dt<span class="sc">$</span>source <span class="ot">=</span> <span class="st">&#39;PLAZA&#39;</span></span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/PLAZA_selection.txt&#39;</span></span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(dt, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>dt<span class="sc">$</span>source <span class="ot">=</span> <span class="st">&#39;PLAZA&#39;</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="fu">setDT</span>(dt)</span></code></pre></div>
+</div>
+<div id="clean" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> clean</h1>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a>dt <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(orthologous_species) <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(dt <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(orthologous_species) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">slice_tail</span>(<span class="at">n =</span> <span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(orthologous_species) <span class="sc">%&gt;%</span></span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="ot">-&gt;</span> first_last_two_per_plant</span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a><span class="fu">print</span>(first_last_two_per_plant, <span class="at">n =</span> <span class="fu">nrow</span>(first_last_two_per_plant))</span></code></pre></div>
+<pre><code>## # A tibble: 20 × 5
+##    query_gene query_species orthologous_gene     orthologous_species source
+##    &lt;chr&gt;      &lt;chr&gt;         &lt;chr&gt;                &lt;chr&gt;               &lt;chr&gt; 
+##  1 AT1G01020  ath           MD01G1091900         mdo                 PLAZA 
+##  2 AT1G01020  ath           MD07G1162500         mdo                 PLAZA 
+##  3 AT1G16360  ath           MD17G1286800         mdo                 PLAZA 
+##  4 AT1G79450  ath           MD17G1286800         mdo                 PLAZA 
+##  5 AT1G01020  ath           Prupe.2G201100       ppe                 PLAZA 
+##  6 AT1G01050  ath           Prupe.2G200700       ppe                 PLAZA 
+##  7 AT1G52360  ath           Prupe.I003200        ppe                 PLAZA 
+##  8 AT5G40850  ath           Prupe.I005100        ppe                 PLAZA 
+##  9 AT1G01020  ath           Solyc11g008790.3     sly                 PLAZA 
+## 10 AT1G01050  ath           Solyc08g083370.4     sly                 PLAZA 
+## 11 AT2G17845  ath           Solyc12g100280.3     sly                 PLAZA 
+## 12 AT3G01980  ath           Solyc12g100280.3     sly                 PLAZA 
+## 13 AT1G01020  ath           PGSC0003DMG400016241 stu                 PLAZA 
+## 14 AT1G01050  ath           PGSC0003DMG400012223 stu                 PLAZA 
+## 15 AT1G19715  ath           PGSC0003DMG404017205 stu                 PLAZA 
+## 16 AT1G73040  ath           PGSC0003DMG404017205 stu                 PLAZA 
+## 17 AT1G01020  ath           GSVIVG01027464001    vvi                 PLAZA 
+## 18 AT1G01020  ath           GSVIVG01003191001    vvi                 PLAZA 
+## 19 AT1G22240  ath           GSVIVG01038732001    vvi                 PLAZA 
+## 20 AT4G21790  ath           GSVIVG01038795001    vvi                 PLAZA</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>reference <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(to_plant) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(reference <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(to_plant) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">slice_tail</span>(<span class="at">n =</span> <span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(to_plant) <span class="sc">%&gt;%</span></span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="ot">-&gt;</span> first_last_two_per_plant</span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="fu">print</span>(first_last_two_per_plant, <span class="at">n =</span> <span class="fu">nrow</span>(first_last_two_per_plant))</span></code></pre></div>
+<pre><code>## # A tibble: 20 × 3
+##    sourceID                   Ortholog             to_plant
+##    &lt;chr&gt;                      &lt;chr&gt;                &lt;chr&gt;   
+##  1 Maldo.hc.v1a1.ch16A.g19172 MD15G1256000         mdo     
+##  2 Maldo.hc.v1a1.ch11A.g06055 MD15G1256000         mdo     
+##  3 Maldo.hc.v1a1.ch17A.g24110 MD17G1275700         mdo     
+##  4 Maldo.hc.v1a1.ch17A.g24183 MD17G1284600         mdo     
+##  5 Prupe.8G055800             Prupe.8G055800       ppe     
+##  6 Prupe.8G055800             Prupe.1G202700       ppe     
+##  7 Prupe.4G094400             Prupe.4G094400       ppe     
+##  8 Prupe.4G265600             Prupe.4G265600       ppe     
+##  9 Solyc01T001938             Solyc03g044748.1     sly     
+## 10 Solyc01T001938             Solyc07g055577.1     sly     
+## 11 Solyc12T000649             Solyc12g150104.1     sly     
+## 12 Solyc12T001960             Solyc12g150119.1     sly     
+## 13 Soltu.DM.01G000020         PGSC0003DMG400015132 stu     
+## 14 Soltu.DM.01G000030         PGSC0003DMG400022764 stu     
+## 15 PGSC0003DMG400034296       PGSC0003DMG400034296 stu     
+## 16 PGSC0003DMG406000038       PGSC0003DMG406000038 stu     
+## 17 Vitvi05_01chr12g12450      GSVIVG01014904001    vvi     
+## 18 Vitvi05_01chr13g23290      GSVIVG01014904001    vvi     
+## 19 Vitvi05_01chr18g33120      GSVIVG01023221001    vvi     
+## 20 Vitvi05_01chr19g09690      GSVIVG01037760001    vvi</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">table</span>(dt[(dt<span class="sc">$</span>orthologous_gene <span class="sc">%nin%</span> reference<span class="sc">$</span>Ortholog), ]<span class="sc">$</span>orthologous_species)</span></code></pre></div>
+<pre><code>## 
+##  mdo  ppe  sly  stu  vvi 
+## 2491    3 2110   77 1284</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="co"># Join and filter only matching rows</span></span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>dt <span class="ot">=</span> dt[reference, on <span class="ot">=</span> .(<span class="at">orthologous_gene =</span> Ortholog, <span class="at">orthologous_species =</span> to_plant), nomatch <span class="ot">=</span> <span class="dv">0</span>] <span class="co"># unmatched rows are excluded entirely</span></span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a>dt[, orthologous_gene <span class="sc">:=</span> sourceID]</span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>dt[, orthologous_gene <span class="sc">:=</span> sourceID][, sourceID <span class="sc">:=</span> <span class="cn">NULL</span>]</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>dt <span class="ot">=</span> <span class="fu">unique</span>(dt)</span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a></span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a></span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a>dt <span class="sc">%&gt;%</span></span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(orthologous_species) <span class="sc">%&gt;%</span></span>
+<span id="cb29-11"><a href="#cb29-11" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb29-12"><a href="#cb29-12" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(dt <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(orthologous_species) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">slice_tail</span>(<span class="at">n =</span> <span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb29-13"><a href="#cb29-13" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(orthologous_species) <span class="sc">%&gt;%</span></span>
+<span id="cb29-14"><a href="#cb29-14" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="ot">-&gt;</span> first_last_two_per_plant</span>
+<span id="cb29-15"><a href="#cb29-15" tabindex="-1"></a><span class="fu">print</span>(first_last_two_per_plant, <span class="at">n =</span> <span class="fu">nrow</span>(first_last_two_per_plant))</span></code></pre></div>
+<pre><code>## # A tibble: 20 × 5
+##    query_gene query_species orthologous_gene          orthologous_species source
+##    &lt;chr&gt;      &lt;chr&gt;         &lt;chr&gt;                     &lt;chr&gt;               &lt;chr&gt; 
+##  1 AT2G28190  ath           Maldo.hc.v1a1.ch6A.g38979 mdo                 PLAZA 
+##  2 AT2G07732  ath           Maldo.hc.v1a1.sc90A.g499… mdo                 PLAZA 
+##  3 AT5G17400  ath           Maldo.hc.v1a1.ch9A.g48118 mdo                 PLAZA 
+##  4 AT2G47300  ath           Maldo.hc.v1a1.ch17A.g241… mdo                 PLAZA 
+##  5 AT3G02890  ath           Prupe.2G329000            ppe                 PLAZA 
+##  6 AT5G16680  ath           Prupe.2G329000            ppe                 PLAZA 
+##  7 AT4G03170  ath           Prupe.4G260600            ppe                 PLAZA 
+##  8 AT4G03160  ath           Prupe.4G260600            ppe                 PLAZA 
+##  9 AT5G07610  ath           Solyc05T002277            sly                 PLAZA 
+## 10 AT4G04330  ath           Solyc02T001764            sly                 PLAZA 
+## 11 AT3G18160  ath           Solyc12T001775            sly                 PLAZA 
+## 12 AT3G01510  ath           Solyc12T001230            sly                 PLAZA 
+## 13 AT1G61070  ath           Soltu.DM.01G000020        stu                 PLAZA 
+## 14 AT2G02100  ath           Soltu.DM.01G000020        stu                 PLAZA 
+## 15 AT4G28140  ath           PGSC0003DMG400041562      stu                 PLAZA 
+## 16 AT3G15353  ath           PGSC0003DMG400015318      stu                 PLAZA 
+## 17 AT3G20250  ath           Vitvi05_01chr09g20830     vvi                 PLAZA 
+## 18 AT4G25880  ath           Vitvi05_01chr09g20830     vvi                 PLAZA 
+## 19 AT3G27027  ath           Vitvi05_01chr17g01390     vvi                 PLAZA 
+## 20 AT3G01940  ath           Vitvi05_01chr17g01390     vvi                 PLAZA</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">colnames</span>(dt) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>,</span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a>                 <span class="st">&quot;from_plant&quot;</span>,</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a>                 <span class="st">&quot;to&quot;</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>                 <span class="st">&quot;to_plant&quot;</span>,</span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>                 <span class="st">&quot;source&quot;</span>)</span></code></pre></div>
+</div>
+<div id="write-and-zip" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> write and zip</h1>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/PLAZA_cleaned.txt&#39;</span></span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(dt, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb32-7"><a href="#cb32-7" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb32-8"><a href="#cb32-8" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
-<div id="sessioninfo" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> sessionInfo</h1>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
-<pre><code>## R version 4.4.1 (2024-06-14 ucrt)
+<div id="sessioninfo" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> sessionInfo</h1>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.5.1 (2025-06-13 ucrt)
 ## Platform: x86_64-w64-mingw32/x64
-## Running under: Windows 11 x64 (build 26100)
+## Running under: Windows 10 x64 (build 19045)
 ## 
 ## Matrix products: default
-## 
+##   LAPACK version 3.12.1
 ## 
 ## locale:
-## [1] LC_COLLATE=English_United Kingdom.utf8 
-## [2] LC_CTYPE=English_United Kingdom.utf8   
-## [3] LC_MONETARY=English_United Kingdom.utf8
-## [4] LC_NUMERIC=C                           
-## [5] LC_TIME=English_United Kingdom.utf8    
+## [1] LC_COLLATE=Slovenian_Slovenia.utf8  LC_CTYPE=Slovenian_Slovenia.utf8   
+## [3] LC_MONETARY=Slovenian_Slovenia.utf8 LC_NUMERIC=C                       
+## [5] LC_TIME=Slovenian_Slovenia.utf8    
 ## 
-## time zone: Europe/Ljubljana
+## time zone: Europe/Warsaw
 ## tzcode source: internal
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] ggplot2_3.5.2  magrittr_2.0.3
+## [1] data.table_1.17.8 magrittr_2.0.4   
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] zip_2.3.2          vctrs_0.6.5        cli_3.6.3          knitr_1.50        
-##  [5] rlang_1.1.5        xfun_0.52          generics_0.1.4     data.table_1.17.0 
-##  [9] jsonlite_2.0.0     glue_1.8.0         htmltools_0.5.8.1  sass_0.4.10       
-## [13] scales_1.4.0       rmarkdown_2.29     grid_4.4.1         evaluate_1.0.3    
-## [17] jquerylib_0.1.4    tibble_3.2.1       fastmap_1.2.0      yaml_2.3.10       
-## [21] lifecycle_1.0.4    compiler_4.4.1     dplyr_1.1.4        RColorBrewer_1.1-3
-## [25] pkgconfig_2.0.3    rstudioapi_0.17.1  R.oo_1.27.1        R.utils_2.13.0    
-## [29] farver_2.1.2       digest_0.6.37      R6_2.6.1           tidyselect_1.2.1  
-## [33] dichromat_2.0-0.1  pillar_1.10.2      R.methodsS3_1.8.2  bslib_0.9.0       
-## [37] withr_3.0.2        tools_4.4.1        gtable_0.3.6       cachem_1.1.0</code></pre>
+##  [1] vctrs_0.6.5       zip_2.3.3         cli_3.6.5         knitr_1.50       
+##  [5] rlang_1.1.6       xfun_0.53         stringi_1.8.7     generics_0.1.4   
+##  [9] jsonlite_2.0.0    glue_1.8.0        htmltools_0.5.8.1 sass_0.4.10      
+## [13] rmarkdown_2.29    tibble_3.3.0      evaluate_1.0.5    jquerylib_0.1.4  
+## [17] fastmap_1.2.0     yaml_2.3.10       openxlsx_4.2.8    lifecycle_1.0.4  
+## [21] stringr_1.5.2     compiler_4.5.1    dplyr_1.1.4       pkgconfig_2.0.3  
+## [25] Rcpp_1.1.0        rstudioapi_0.17.1 R.oo_1.27.1       R.utils_2.13.0   
+## [29] digest_0.6.37     R6_2.6.1          utf8_1.2.6        tidyselect_1.2.1 
+## [33] pillar_1.11.1     bslib_0.9.0       R.methodsS3_1.8.2 tools_4.5.1      
+## [37] cachem_1.1.0</code></pre>
 </div>
 
 

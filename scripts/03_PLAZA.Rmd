@@ -39,14 +39,16 @@ knitr::opts_chunk$set(dev = c('png', 'pdf'),  # this embeds pdf and crates scrol
 
 
 
-```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+```{r, libs}
 
 rm(list = ls(all = TRUE))
 gc()
 
 
 library(magrittr)
-library(ggplot2)
+library(data.table)
+
+`%nin%` = Negate(`%in%`)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
@@ -81,25 +83,12 @@ Michiel Van Bel, Francesca Silvestri, Eric M Weitz, Lukasz Kreft, Alexander Botz
     - Default settings
 
 
-# plant selection
 
-```{r}
+```{r, clean_text}
 
-fp = file.path('..', 'input', 'PLAZA')
+# remove all whitespace characters (\s), double quotes (") and single quotes (') from each string in x using gsub; replace any string that exactly matches "NULL" with NA
 
-species = c('ath', 
-            'mdo',
-            'ppe', 
-            'sly', 
-            'stu',
-            'vvi')
-
-```
-
-
-```{r}
-
-clean_text = function(x) {
+clean_text <- function(x) {
   if (is.character(x)) {
     # Remove all whitespace and quotes
     cleaned <- gsub("[\\s\"']", "", x, perl = TRUE)
@@ -112,18 +101,196 @@ clean_text = function(x) {
 
 ```
 
+# stu exception
+
+```{r, stu_read}
+
+# download and read Excel files
+read_excel_from_url <- function(url, start_row = 1, columns = NULL) {
+  temp_file = tempfile(fileext = ".xlsx")
+  utils::download.file(url, destfile = temp_file, mode = "wb")
+  data = openxlsx::read.xlsx(temp_file, startRow = start_row)
+  if (!is.null(columns)) data = data[, columns]
+  return(data)
+}
+
+# DMT2DMG in unitato
+dmt_url = "https://raw.githubusercontent.com/NIB-SI/unitato/main/output/Phureja_v4-v6.1_annotations.xlsx"
+dmt_cols = c("geneID", "v4_PGSC_DMT")
+dmt_data = read_excel_from_url(dmt_url, start_row = 3, columns = dmt_cols)
+dmt_data = dmt_data[!is.na(dmt_data$v4_PGSC_DMT), ]
+data.table::setDT(dmt_data)
+dmt_data.unitato = data.table::copy(dmt_data)
+
+# converter table
+zip_url = "https://github.com/NIB-SI/unitato/raw/main/input/Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt.zip"
+zip_file = tempfile(fileext = ".zip")
+temp_dir = tempdir()
+utils::download.file(zip_url, zip_file, mode = "wb")
+utils::unzip(zip_file, exdir = temp_dir)
+converter_file = file.path(temp_dir, "Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt")
+converter_data = data.table::fread(converter_file, sep = "\t", header = FALSE, fill = TRUE, quote = "")
+converter_data = converter_data[, .(V1, V2)]
+data.table::setnames(converter_data, names(dmt_data))
+dmt_data = unique(rbind(dmt_data, converter_data))
+data.table::setnames(dmt_data, c("sourceID", "Ortholog"))
+
+# Load and clean translation table
+trans_url = "https://raw.githubusercontent.com/NIB-SI/unitato/main/output/Phureja_v4-v6.1_translations.xlsx"
+trans_cols = c("v4_geneID", "v6.1_geneID")
+trans_data = read_excel_from_url(trans_url, start_row = 2, columns = trans_cols)
+colnames(trans_data) = c("Ortholog", "sourceID")
+trans_data = trans_data[grep("PGSC", trans_data$Ortholog), ]
+
+# unitato table ++
+dmt_data = dmt_data[sourceID %nin% trans_data$Ortholog]
+dmt_data[, Ortholog := sourceID]
+unitato = rbind(trans_data, dmt_data)
+unitato = unitato[]
+data.table::setDT(unitato)
+unitato <- unitato[, .(sourceID, Ortholog)]
+
+lost = setdiff(grep("PGSC", unitato$sourceID, value = TRUE), dmt_data.unitato$geneID)
+table(grep("PGSC", unitato$sourceID, value = TRUE) %in% dmt_data.unitato$geneID)
+unitato = unitato[unitato$Ortholog %nin% lost, ]
+
+
+```
+
+
+
+# params
+
+```{r, params}
+
+params_list = list(
+  list(to_plant = 'stu', 
+       stp = 'stu', # standardised plant abbreviation 
+       ref_genome = "UniTato_pep_oneliner",
+       plaza_genome = "PLAZA_proteome.selected_transcript.stu",
+       pdir = "stu_potato"
+       # ,
+       # from_sub_pattern = NULL,
+       # to_sub_pattern = "(\\.[0-9]+)+$"
+       ),
+  list(to_plant = 'sly', 
+       stp = 'sly', # standardised plant abbreviation 
+       ref_genome = "Phytozome_Slycopersicum_796_ITAG5.0.protein_primaryTranscriptOnly",
+       plaza_genome = "PLAZA_proteome.selected_transcript.sly",
+       pdir = "sly_tomato",
+       from_sub_pattern = "\\.[0-9]+$", # "(\\.[^.]+){2}$",
+       to_sub_pattern = "(\\.[0-9]+)+$"), 
+  list(to_plant = 'vvi', 
+       stp = 'vvi', # standardised plant abbreviation 
+       ref_genome = "Grapedia_5.1_on_T2T_ref_main_proteins",
+       plaza_genome = "PLAZA_PN40024-Genoscope-12.xproteome.selected_transcript.vvi",
+       pdir = "vvi_grapevine",
+       from_sub_pattern = ".*\\s",
+       to_sub_pattern = "(_[^_]*){2}$"), # everythin after the last dot
+    
+  list(to_plant = 'mdo', 
+       stp = 'mdo', # standardised plant abbreviation 
+       ref_genome = "g.Honeycrisp_HAP1_braker1+2_combined_fullSupport_longname_filtered.pep",
+       plaza_genome = "PLAZA_proteome.selected_transcript.mdo",
+       pdir = "mdo_apple",
+       # from_sub_pattern = NULL,
+       to_sub_pattern = "\\.[^.]*$"),
+  
+  list(to_plant = 'ppe', 
+       stp = 'ppe', # standardised plant abbreviation 
+       ref_genome = "PLAZA_proteome.selected_transcript.ppe",
+       plaza_genome = "PLAZA_proteome.selected_transcript.ppe",
+       pdir = "ppe_peach",
+       from_sub_pattern = "\\.[^.]*$",
+       to_sub_pattern = "\\.[^.]*$") # everythin after the last dot
+
+  
+)
+
+
+```
+
+# orthofinder - within
+
+```{r, orthofinder}
+
+
+# Function to process one parameter set
+process_param <- function(param) {
+  
+  stp = param$stp
+  print(stp)
+  ref_genome = paste0(param$ref_genome, '.tsv')
+  plaza_genome = param$plaza_genome
+  to_sub_pattern = param$to_sub_pattern
+  from_sub_pattern = param$from_sub_pattern
+  pdir = param$pdir
+  
+  if (stp == "stu") { # potato exception
+    result = unitato
+  } else {
+    
+
+    files = list.files(file.path("..", "input", "OrthoFinder", pdir))
+    fn = grep(ref_genome, files, value = TRUE, fixed = TRUE)
+    
+    plaza = data.table::fread(file.path("..", "input", "OrthoFinder", pdir, fn), header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+    
+    data.table::setnames(plaza, old = colnames(plaza)[3], new = "reference")
+    
+    if (!grepl(plaza_genome, ref_genome)) {
+      plaza = plaza[Species == plaza_genome]
+    } else {
+      plaza[, Orthologs := reference]
+    }
+    
+    plaza[, source_list := stringr::str_split(reference, pattern = ",\\s*")]
+    plaza[, orthologs_list := stringr::str_split(Orthologs, pattern = ",\\s*")]
+    
+    result = plaza[, {
+      pairs = data.table::CJ(source_list[[1]], orthologs_list[[1]], sorted = FALSE)
+      data.table::setnames(pairs, c("sourceID", "Ortholog"))
+      pairs
+    }, by = seq_len(nrow(plaza))]
+    result[, seq_len := NULL]
+    
+    if (!is.null(to_sub_pattern)) {
+      result[, sourceID := gsub(to_sub_pattern, "", sourceID)]
+    }
+    if (!is.null(from_sub_pattern)) {
+      result[, Ortholog := gsub(from_sub_pattern, "", Ortholog)]
+    } 
+  }
+    
+
+  result$to_plant = stp
+  unique(result)
+  
+}
+
+# Use lapply to process list
+reference_list = lapply(params_list, process_param)
+reference = data.table::rbindlist(reference_list)
+rm(reference_list)
+
+```
+
+
 # trog
 
-```{r}
+```{r, trog}
 
+fp = file.path('..', 'input', 'PLAZA')
 fn = 'integrative_orthology.TROG.csv.gz'
-
 dt = data.table::fread(file.path(fp, fn) , skip = 2)
 gc()
+
 colnames(dt) = sub('\\#', '', colnames(dt))
+species = c('ath', sapply(params_list, function(x) x$stp))
 df = dt[dt$query_species %in% species & dt$orthologous_species %in% species, ]
 rm(dt)
 gc()
+
 df = as.data.frame(lapply(df, clean_text), stringsAsFactors = FALSE)
 table(df$query_species, df$orthologous_species)
 
@@ -140,14 +307,71 @@ df_sub2 = df_sub2[, columns]
 colnames(df_sub2) = colnames(df_sub1)
 dt = rbind(df_sub1, df_sub2)
 
-table(dt$query_species, dt$orthologous_species)
 dt = dt[!duplicated(dt), ]
 table(dt$query_species, dt$orthologous_species)
 
 dt$source = 'PLAZA'
+setDT(dt)
+
+```
 
 
-file_path = '../intermediate/PLAZA_selection.txt'
+# clean
+
+```{r, clean}
+
+dt %>%
+  dplyr::group_by(orthologous_species) %>%
+  dplyr::slice_head(n = 2) %>%
+  dplyr::bind_rows(dt %>% dplyr::group_by(orthologous_species) %>% dplyr::slice_tail(n = 2)) %>%
+  dplyr::arrange(orthologous_species) %>%
+  dplyr::ungroup() -> first_last_two_per_plant
+print(first_last_two_per_plant, n = nrow(first_last_two_per_plant))
+
+
+reference %>%
+  dplyr::group_by(to_plant) %>%
+  dplyr::slice_head(n = 2) %>%
+  dplyr::bind_rows(reference %>% dplyr::group_by(to_plant) %>% dplyr::slice_tail(n = 2)) %>%
+  dplyr::arrange(to_plant) %>%
+  dplyr::ungroup() -> first_last_two_per_plant
+print(first_last_two_per_plant, n = nrow(first_last_two_per_plant))
+
+
+table(dt[(dt$orthologous_gene %nin% reference$Ortholog), ]$orthologous_species)
+
+# Join and filter only matching rows
+dt = dt[reference, on = .(orthologous_gene = Ortholog, orthologous_species = to_plant), nomatch = 0] # unmatched rows are excluded entirely
+dt[, orthologous_gene := sourceID]
+dt[, orthologous_gene := sourceID][, sourceID := NULL]
+
+dt = unique(dt)
+
+
+dt %>%
+  dplyr::group_by(orthologous_species) %>%
+  dplyr::slice_head(n = 2) %>%
+  dplyr::bind_rows(dt %>% dplyr::group_by(orthologous_species) %>% dplyr::slice_tail(n = 2)) %>%
+  dplyr::arrange(orthologous_species) %>%
+  dplyr::ungroup() -> first_last_two_per_plant
+print(first_last_two_per_plant, n = nrow(first_last_two_per_plant))
+
+colnames(dt) = c("from",
+                 "from_plant",
+                 "to",
+                 "to_plant",
+                 "source")
+
+
+```
+
+
+# write and zip
+
+```{r, zip}
+
+
+file_path = '../intermediate/PLAZA_cleaned.txt'
 data.table::fwrite(dt, file_path, sep = '\t')
 root_dir = dirname(file_path)
 file_name = basename(file_path)

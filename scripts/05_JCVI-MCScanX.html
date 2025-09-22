@@ -11,9 +11,9 @@
 
 <meta name="author" content="zagor" />
 
-<meta name="date" content="2025-09-19" />
+<meta name="date" content="2025-09-22" />
 
-<title>05_JCVI-MCScanX</title>
+<title>05_JCVI-MCScan</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1316,8 +1316,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -1328,7 +1329,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -1568,9 +1569,9 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">05_JCVI-MCScanX</h1>
+<h1 class="title toc-ignore">05_JCVI-MCScan</h1>
 <h4 class="author">zagor</h4>
-<h4 class="date">2025-09-19</h4>
+<h4 class="date">2025-09-22</h4>
 
 </div>
 
@@ -1578,111 +1579,293 @@ border-radius: 0px;
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>(<span class="at">all =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells  554614 29.7    1241382 66.3   686457 36.7
-## Vcells 1014998  7.8    8388608 64.0  1876634 14.4</code></pre>
+## Ncells  624877 33.4    1434338 76.7   702048 37.5
+## Vcells 1170234  9.0    8388608 64.0  1927980 14.8</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">setwd</span>(<span class="fu">dirname</span>(rstudioapi<span class="sc">::</span><span class="fu">getActiveDocumentContext</span>()<span class="sc">$</span>path))</span></code></pre></div>
-<div id="plant-selection" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> plant selection</h1>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>fp <span class="ot">=</span> <span class="fu">file.path</span>(<span class="st">&#39;..&#39;</span>, <span class="st">&#39;input&#39;</span>, <span class="st">&#39;JCVI&#39;</span>, <span class="st">&#39;IDs&#39;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>fl <span class="ot">=</span> <span class="fu">list.files</span>(fp)</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>myList <span class="ot">=</span> <span class="cn">NULL</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> fl) {</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="co"># print(i)</span></span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  lines <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="fu">file.path</span>(fp, i), <span class="at">header =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  ids <span class="ot">=</span> lines[, <span class="dv">4</span>]</span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="fu">colnames</span>(ids) <span class="ot">=</span> <span class="st">&#39;ID&#39;</span></span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  ids<span class="sc">$</span>plant <span class="ot">=</span> <span class="fu">sub</span>(<span class="st">&#39;</span><span class="sc">\\</span><span class="st">..*&#39;</span>, <span class="st">&#39;&#39;</span>, i)</span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  myList <span class="ot">=</span> <span class="fu">rbind</span>(myList, ids)</span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>}</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>athList <span class="ot">=</span> myList[myList<span class="sc">$</span>plant <span class="sc">==</span> <span class="st">&#39;ath&#39;</span>, ]</span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="fu">setwd</span>(<span class="fu">dirname</span>(rstudioapi<span class="sc">::</span><span class="fu">getActiveDocumentContext</span>()<span class="sc">$</span>path))</span></code></pre></div>
+<div id="stu-exception" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> stu exception</h1>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># download and read Excel files</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>read_excel_from_url <span class="ot">&lt;-</span> <span class="cf">function</span>(url, <span class="at">start_row =</span> <span class="dv">1</span>, <span class="at">columns =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  temp_file <span class="ot">=</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.xlsx&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  utils<span class="sc">::</span><span class="fu">download.file</span>(url, <span class="at">destfile =</span> temp_file, <span class="at">mode =</span> <span class="st">&quot;wb&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  data <span class="ot">=</span> openxlsx<span class="sc">::</span><span class="fu">read.xlsx</span>(temp_file, <span class="at">startRow =</span> start_row)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(columns)) data <span class="ot">=</span> data[, columns]</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="fu">return</span>(data)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>}</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co"># DMT2DMG in unitato</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>dmt_url <span class="ot">=</span> <span class="st">&quot;https://raw.githubusercontent.com/NIB-SI/unitato/main/output/Phureja_v4-v6.1_annotations.xlsx&quot;</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>dmt_cols <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;geneID&quot;</span>, <span class="st">&quot;v4_PGSC_DMT&quot;</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>dmt_data <span class="ot">=</span> <span class="fu">read_excel_from_url</span>(dmt_url, <span class="at">start_row =</span> <span class="dv">3</span>, <span class="at">columns =</span> dmt_cols)</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>dmt_data <span class="ot">=</span> dmt_data[<span class="sc">!</span><span class="fu">is.na</span>(dmt_data<span class="sc">$</span>v4_PGSC_DMT), ]</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setDT</span>(dmt_data)</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a><span class="co"># generic converter table - not all in unitato and not all unitati DMG in zhis one (e.g.chrUn)</span></span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a>zip_url <span class="ot">=</span> <span class="st">&quot;https://github.com/NIB-SI/unitato/raw/main/input/Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt.zip&quot;</span></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>zip_file <span class="ot">=</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.zip&quot;</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>temp_dir <span class="ot">=</span> <span class="fu">tempdir</span>()</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">download.file</span>(zip_url, zip_file, <span class="at">mode =</span> <span class="st">&quot;wb&quot;</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>utils<span class="sc">::</span><span class="fu">unzip</span>(zip_file, <span class="at">exdir =</span> temp_dir)</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a>converter_file <span class="ot">=</span> <span class="fu">file.path</span>(temp_dir, <span class="st">&quot;Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt&quot;</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>converter_data <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(converter_file, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">header =</span> <span class="cn">FALSE</span>, <span class="at">fill =</span> <span class="cn">TRUE</span>, <span class="at">quote =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>converter_data <span class="ot">=</span> converter_data[, .(V1, V2)]</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setnames</span>(converter_data, <span class="fu">names</span>(dmt_data))</span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a>DMT2DMG <span class="ot">=</span> <span class="fu">unique</span>(<span class="fu">rbind</span>(dmt_data, converter_data))</span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">setnames</span>(DMT2DMG, <span class="fu">c</span>(<span class="st">&quot;geneID&quot;</span>, <span class="st">&quot;v4_PGSC_DMT&quot;</span>))</span></code></pre></div>
 </div>
-<div id="input" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> input</h1>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>fp <span class="ot">=</span> <span class="fu">file.path</span>(<span class="st">&#39;..&#39;</span>, <span class="st">&#39;input&#39;</span>, <span class="st">&#39;JCVI&#39;</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>files_all <span class="ot">=</span> <span class="fu">list.files</span>(<span class="at">path =</span> fp, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>fl <span class="ot">=</span> files_all[<span class="sc">!</span><span class="fu">file.info</span>(files_all)<span class="sc">$</span>isdir]</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>fl <span class="ot">=</span> fl[<span class="fu">grep</span>(<span class="st">&#39;anchors&#39;</span>, fl)]</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>df <span class="ot">=</span> <span class="cn">NULL</span></span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> fl) {</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>  lines <span class="ot">=</span> <span class="fu">readLines</span>(i)</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  lines_clean <span class="ot">=</span> lines[<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">&quot;^#&quot;</span>, lines)]</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  text_data <span class="ot">=</span> <span class="fu">paste</span>(lines_clean, <span class="at">collapse =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  dt <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="at">text =</span> text_data, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">header =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>              <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;from_id&quot;</span>, <span class="st">&quot;to_id&quot;</span>, <span class="st">&quot;JCVI_value&quot;</span>))</span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>  df <span class="ot">=</span> <span class="fu">rbind</span>(df, dt)</span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a></span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>}</span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a></span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a></span>
-<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="fu">colnames</span>(athList) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;from_id&#39;</span>, <span class="st">&#39;from_plant&#39;</span>)</span>
-<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">merge</span>(df, athList, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;from_id&#39;</span>), <span class="at">all =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<div id="params" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> params</h1>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>params_list <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;stuUniTato&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;stu&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;(</span><span class="sc">\\</span><span class="st">.[0-9]+)+$&quot;</span>), <span class="co"># numbers after last dots marking gene: .1 or .1.1 + exception</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;stuv6&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;stu6&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;(</span><span class="sc">\\</span><span class="st">.[0-9]+)+$&quot;</span>), <span class="co"># numbers after last dots marking gene: .1 or .1.1 + exception</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;stuv4&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;stu4&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;(</span><span class="sc">\\</span><span class="st">.[0-9]+)+$&quot;</span>), <span class="co"># numbers after last dots marking gene: .1 or .1.1 + exception</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  </span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;slyv4&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;sly4&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;(</span><span class="sc">\\</span><span class="st">.[0-9]+)+$&quot;</span>), <span class="co"># # numbers after last dots marking gene</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;slyv5&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;sly&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>), <span class="co"># everythin after the last dot</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  </span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;vvi12Xv2&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;vvi3&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>), <span class="co"># everythin after the last dot</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;vviT2Tv5&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;vvi&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;_[^_]*$&quot;</span>), <span class="co"># remove everything second from the last &#39;_&#39;</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>    </span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;mdoGDv1&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;mdo1&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;&quot;</span>), <span class="co">#</span></span>
+<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;mdoHChap1&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;mdo&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>), <span class="co"># everythin after the last dot</span></span>
+<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a>  </span>
+<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;ppe&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;ppe&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>), <span class="co"># everythin after the last dot</span></span>
+<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;almond&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;pdul&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span>), <span class="co"># everythin after the last dot</span></span>
+<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;wildcherry&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;pavi&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;-[^-]*$&quot;</span>), <span class="co"># T1, T2, T3 in .bed file have the same coord</span></span>
+<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;apricot&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;parm&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]+</span><span class="sc">\\</span><span class="st">.[^.]+$&quot;</span>), <span class="co"># .t1.p1_1</span></span>
+<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a>  </span>
+<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;cherryplum&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;pcer&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]+</span><span class="sc">\\</span><span class="st">.[^.]+$&quot;</span>), <span class="co"># .t1.p1_1</span></span>
+<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;pear&#39;</span></span>
+<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a>       , <span class="at">stp =</span> <span class="st">&#39;pcox&#39;</span><span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a>       , <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]*$&quot;</span></span>
+<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a>       ), <span class="co"># .t1.p1_1</span></span>
+<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a>   <span class="fu">list</span>(<span class="at">to_plant =</span> <span class="st">&#39;siberianapricot&#39;</span>, <span class="at">stp =</span> <span class="st">&#39;psib&#39;</span>, <span class="co"># standardised plant abbreviation </span></span>
+<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a>       <span class="at">to_sub_pattern =</span> <span class="st">&quot;</span><span class="sc">\\</span><span class="st">.[^.]+</span><span class="sc">\\</span><span class="st">.[^.]+$&quot;</span>) <span class="co"># .t1.p1_1</span></span>
+<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a>  </span>
+<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a>)</span>
+<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a></span>
+<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a></span>
+<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a>pattern_map <span class="ot">=</span> purrr<span class="sc">::</span><span class="fu">map_chr</span>(params_list, <span class="st">&quot;to_sub_pattern&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a>  <span class="fu">setNames</span>(purrr<span class="sc">::</span><span class="fu">map_chr</span>(params_list, <span class="st">&quot;to_plant&quot;</span>))</span>
+<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a>pattern_mapP <span class="ot">=</span> purrr<span class="sc">::</span><span class="fu">map_chr</span>(params_list, <span class="st">&quot;stp&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-48"><a href="#cb5-48" tabindex="-1"></a>  <span class="fu">setNames</span>(purrr<span class="sc">::</span><span class="fu">map_chr</span>(params_list, <span class="st">&quot;to_plant&quot;</span>))</span></code></pre></div>
 </div>
-<div id="output" class="section level1" number="3">
-<h1><span class="header-section-number">3</span> output</h1>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">colnames</span>(myList) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;to_id&#39;</span>, <span class="st">&#39;to_plant&#39;</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">merge</span>(df, myList, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;to_id&#39;</span>), <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>columns <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;from_id&quot;</span>, <span class="st">&quot;from_plant&quot;</span>, <span class="st">&quot;to_id&quot;</span>, <span class="st">&quot;to_plant&quot;</span>, <span class="st">&quot;JCVI_value&quot;</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>df <span class="ot">=</span> df[, ..columns]</span>
+<div id="mcscan-raw" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> MCScan raw</h1>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>fp <span class="ot">=</span> <span class="fu">file.path</span>(<span class="st">&#39;..&#39;</span>, <span class="st">&#39;input&#39;</span>, <span class="st">&#39;JCVI&#39;</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>files_all <span class="ot">=</span> <span class="fu">list.files</span>(<span class="at">path =</span> fp, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>fl <span class="ot">=</span> files_all[<span class="sc">!</span><span class="fu">file.info</span>(files_all)<span class="sc">$</span>isdir]</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>fl <span class="ot">=</span> fl[<span class="fu">grep</span>(<span class="st">&#39;anchors&#39;</span>, fl)]</span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>df<span class="sc">$</span>source <span class="ot">=</span> <span class="st">&#39;MCScanX&#39;</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>df <span class="ot">=</span> <span class="cn">NULL</span></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>df <span class="ot">=</span> df[<span class="sc">!</span><span class="fu">duplicated</span>(df), ]</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> fl) {</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  </span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="fu">print</span>(i)</span>
 <span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/JCVI_MCScanX_plants.txt&#39;</span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  lines <span class="ot">=</span> <span class="fu">readLines</span>(i)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  lines_clean <span class="ot">=</span> lines[<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">&quot;^#&quot;</span>, lines)]</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  text_data <span class="ot">=</span> <span class="fu">paste</span>(lines_clean, <span class="at">collapse =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  dt <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="at">text =</span> text_data, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>, <span class="at">header =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>              <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;from_id&quot;</span>, <span class="st">&quot;to_id&quot;</span>, <span class="st">&quot;JCVI_value&quot;</span>))</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>  </span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  dt<span class="sc">$</span>from_id <span class="ot">=</span><span class="fu">gsub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">..*$&quot;</span>, <span class="st">&quot;&quot;</span>, dt<span class="sc">$</span>from_id)</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>  plant <span class="ot">=</span> <span class="fu">sub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">..*$&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="fu">basename</span>(i))</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>  dt<span class="sc">$</span>from_plant <span class="ot">=</span> plant</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  plant <span class="ot">=</span> <span class="fu">sub</span>(<span class="st">&quot;^[^.]*</span><span class="sc">\\</span><span class="st">.([^.]+)</span><span class="sc">\\</span><span class="st">..*$&quot;</span>, <span class="st">&quot;</span><span class="sc">\\</span><span class="st">1&quot;</span>, <span class="fu">basename</span>(i))</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  dt<span class="sc">$</span>to_plant <span class="ot">=</span> plant</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>  <span class="co"># clean ID</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>  dt<span class="sc">$</span>to_id <span class="ot">=</span> <span class="fu">gsub</span>(pattern_map[<span class="fu">grep</span>(plant, <span class="fu">names</span>(pattern_map))][[<span class="dv">1</span>]], <span class="st">&quot;&quot;</span>, dt<span class="sc">$</span>to_id)</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>  </span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>  <span class="cf">if</span> (plant <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;stuv4&quot;</span>, <span class="st">&quot;stuUniTato&quot;</span>)) {</span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>    <span class="fu">setkey</span>(DMT2DMG, v4_PGSC_DMT)</span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>    dt[DMT2DMG, on <span class="ot">=</span> .(<span class="at">to_id =</span> v4_PGSC_DMT), to_id <span class="sc">:=</span> i.geneID] </span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>  }</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>  </span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>  </span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>  df <span class="ot">=</span> <span class="fu">rbind</span>(df, dt)</span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## [1] &quot;../input/JCVI/ath.almond.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.apricot.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.cherryplum.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.mdoGDv1.1.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.mdoHChap1.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.pear.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.ppe.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.siberianapricot.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.slyv4.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.slyv5.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.stuUniTato.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.stuv4.03.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.stuv6.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.vvi12Xv2.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.vviT2Tv5.lifted.anchors&quot;
+## [1] &quot;../input/JCVI/ath.wildcherry.lifted.anchors&quot;</code></pre>
+</div>
+<div id="output" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> output</h1>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>columns <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;from_id&quot;</span>, <span class="st">&quot;from_plant&quot;</span>, <span class="st">&quot;to_id&quot;</span>, <span class="st">&quot;to_plant&quot;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>df <span class="ot">=</span> df[, ..columns]</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>df<span class="sc">$</span>source <span class="ot">=</span> <span class="st">&#39;MCScanX&#39;</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>df <span class="ot">=</span> df[<span class="sc">!</span><span class="fu">is.na</span>(df<span class="sc">$</span>to_id) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(df<span class="sc">$</span>from_id), ]</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>df <span class="ot">=</span> df[<span class="sc">!</span><span class="fu">duplicated</span>(df), ]</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>df[, to_plant <span class="sc">:=</span> pattern_mapP[to_plant]]</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">group_by</span>(to_plant) <span class="sc">%&gt;%</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">bind_rows</span>(df <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(to_plant) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">slice_tail</span>(<span class="at">n =</span> <span class="dv">2</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">arrange</span>(to_plant) <span class="sc">%&gt;%</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="ot">-&gt;</span> first_last_two_per_plant</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="fu">print</span>(first_last_two_per_plant, <span class="at">n =</span> <span class="fu">nrow</span>(first_last_two_per_plant))</span></code></pre></div>
+<pre><code>## # A tibble: 64 × 5
+##    from_id   from_plant to_id                       to_plant source 
+##    &lt;chr&gt;     &lt;chr&gt;      &lt;chr&gt;                       &lt;chr&gt;    &lt;chr&gt;  
+##  1 AT1G03770 ath        Maldo.hc.v1a1.ch10A.g02825  mdo      MCScanX
+##  2 AT1G03800 ath        Maldo.hc.v1a1.ch10A.g02815  mdo      MCScanX
+##  3 ATMG00910 ath        Maldo.hc.v1a1.sc45A.g49878  mdo      MCScanX
+##  4 ATMG01020 ath        Maldo.hc.v1a1.sc45A.g49883  mdo      MCScanX
+##  5 AT1G04040 ath        MD00G1060800                mdo1     MCScanX
+##  6 AT1G04050 ath        MD00G1060700                mdo1     MCScanX
+##  7 ATCG00480 ath        MD11G1295100                mdo1     MCScanX
+##  8 ATCG00490 ath        MD11G1295000                mdo1     MCScanX
+##  9 AT1G04400 ath        PruarM.1G051900             parm     MCScanX
+## 10 AT1G04410 ath        PruarM.1G052500             parm     MCScanX
+## 11 AT5G64410 ath        PruarM.8G146300             parm     MCScanX
+## 12 AT5G64410 ath        PruarM.8G146200             parm     MCScanX
+## 13 AT1G04220 ath        FUN_000300                  pavi     MCScanX
+## 14 AT1G04230 ath        FUN_000316                  pavi     MCScanX
+## 15 ATMG01190 ath        FUN_026738                  pavi     MCScanX
+## 16 ATMG00910 ath        FUN_040205                  pavi     MCScanX
+## 17 AT1G04220 ath        Pcer_000137-RA              pcer     MCScanX
+## 18 AT1G04230 ath        Pcer_000150-RA              pcer     MCScanX
+## 19 ATMG00080 ath        Pcer_091446-RA              pcer     MCScanX
+## 20 ATMG00513 ath        Pcer_091469-RA              pcer     MCScanX
+## 21 AT1G03900 ath        Pyrco.da.v2a1.chr10A.089110 pcox     MCScanX
+## 22 AT1G03920 ath        Pyrco.da.v2a1.chr10A.089090 pcox     MCScanX
+## 23 AT5G56870 ath        Pyrco.da.v2a1.chr9A.225970  pcox     MCScanX
+## 24 AT5G57035 ath        Pyrco.da.v2a1.chr9A.225390  pcox     MCScanX
+## 25 AT1G04220 ath        TexasF1_G767                pdul     MCScanX
+## 26 AT1G04230 ath        TexasF1_G779                pdul     MCScanX
+## 27 ATCG00170 ath        TexasF1_G22620              pdul     MCScanX
+## 28 ATCG00500 ath        TexasF1_G22624              pdul     MCScanX
+## 29 AT1G04230 ath        Prupe.1G027200              ppe      MCScanX
+## 30 AT1G04240 ath        Prupe.1G027500              ppe      MCScanX
+## 31 ATCG00530 ath        Prupe.7G029500              ppe      MCScanX
+## 32 ATCG00680 ath        Prupe.7G029800              ppe      MCScanX
+## 33 AT1G04230 ath        PaF106G0100000358           psib     MCScanX
+## 34 AT1G04240 ath        PaF106G0100000361           psib     MCScanX
+## 35 ATCG00340 ath        PaF106G0700028636           psib     MCScanX
+## 36 ATCG00350 ath        PaF106G0700028635           psib     MCScanX
+## 37 AT1G01180 ath        Solyc01T003002              sly      MCScanX
+## 38 AT1G01190 ath        Solyc01T002993              sly      MCScanX
+## 39 ATMG01110 ath        Solyc11T001808              sly      MCScanX
+## 40 ATMG01330 ath        Solyc11T001788              sly      MCScanX
+## 41 AT1G01180 ath        Solyc01g096380              sly4     MCScanX
+## 42 AT1G01190 ath        Solyc01g096280              sly4     MCScanX
+## 43 ATMG01120 ath        Solyc00g118690              sly4     MCScanX
+## 44 ATMG01130 ath        Solyc00g118680              sly4     MCScanX
+## 45 AT1G01220 ath        Soltu.DM.01G035280          stu      MCScanX
+## 46 AT1G01225 ath        Soltu.DM.01G035270          stu      MCScanX
+## 47 ATMG01080 ath        PGSC0003DMG400002202        stu      MCScanX
+## 48 ATMG01110 ath        Soltu.DM.12G017350          stu      MCScanX
+## 49 AT1G13600 ath        PGSC0003DMG400001916        stu4     MCScanX
+## 50 AT1G13635 ath        PGSC0003DMG400001946        stu4     MCScanX
+## 51 ATCG00750 ath        PGSC0003DMG400014075        stu4     MCScanX
+## 52 ATCG00780 ath        PGSC0003DMG400014076        stu4     MCScanX
+## 53 AT1G01220 ath        Soltu.DM.01G035280          stu6     MCScanX
+## 54 AT1G01225 ath        Soltu.DM.01G035270          stu6     MCScanX
+## 55 ATMG00080 ath        Soltu.DM.04G014900          stu6     MCScanX
+## 56 ATMG00513 ath        Soltu.DM.04G014820          stu6     MCScanX
+## 57 AT1G10350 ath        Vitvi05_01chr01g13730       vvi      MCScanX
+## 58 AT1G10370 ath        Vitvi05_01chr01g13610       vvi      MCScanX
+## 59 ATMG01190 ath        Vitvi05_01chr10g19400       vvi      MCScanX
+## 60 ATMG01280 ath        Vitvi05_01chr10g19500       vvi      MCScanX
+## 61 AT1G10370 ath        VIT_201s0026g01380          vvi3     MCScanX
+## 62 AT1G10380 ath        VIT_201s0026g01250          vvi3     MCScanX
+## 63 ATCG01050 ath        VIT_200s0246g00190          vvi3     MCScanX
+## 64 ATCG01010 ath        VIT_200s0246g00150          vvi3     MCScanX</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">table</span>(df<span class="sc">$</span>to_plant)</span></code></pre></div>
+<pre><code>## 
+##   mdo  mdo1  parm  pavi  pcer  pcox  pdul   ppe  psib   sly  sly4   stu  stu4 
+## 32036 33487 18615 19708 63358 33983 20148 17894 16398 17647 19429 17547 14877 
+##  stu6   vvi  vvi3 
+## 18592 18589 15659</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">colnames</span>(df) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>,</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>                 <span class="st">&quot;from_plant&quot;</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>                 <span class="st">&quot;to&quot;</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>                 <span class="st">&quot;to_plant&quot;</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>                 <span class="st">&quot;source&quot;</span>)</span></code></pre></div>
+</div>
+<div id="write-and-zip" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> write and zip</h1>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/JCVI_MCScanX_cleaned.txt&#39;</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(df, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
-<div id="sessioninfo" class="section level1" number="4">
-<h1><span class="header-section-number">4</span> sessionInfo</h1>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
-<pre><code>## R version 4.4.1 (2024-06-14 ucrt)
+<div id="sessioninfo" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> sessionInfo</h1>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.5.1 (2025-06-13 ucrt)
 ## Platform: x86_64-w64-mingw32/x64
-## Running under: Windows 11 x64 (build 26100)
+## Running under: Windows 10 x64 (build 19045)
 ## 
 ## Matrix products: default
-## 
+##   LAPACK version 3.12.1
 ## 
 ## locale:
-## [1] LC_COLLATE=English_United Kingdom.utf8 
-## [2] LC_CTYPE=English_United Kingdom.utf8   
-## [3] LC_MONETARY=English_United Kingdom.utf8
-## [4] LC_NUMERIC=C                           
-## [5] LC_TIME=English_United Kingdom.utf8    
+## [1] LC_COLLATE=Slovenian_Slovenia.utf8  LC_CTYPE=Slovenian_Slovenia.utf8   
+## [3] LC_MONETARY=Slovenian_Slovenia.utf8 LC_NUMERIC=C                       
+## [5] LC_TIME=Slovenian_Slovenia.utf8    
 ## 
-## time zone: Europe/Ljubljana
+## time zone: Europe/Warsaw
 ## tzcode source: internal
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] magrittr_2.0.3
+## [1] data.table_1.17.8 magrittr_2.0.4   
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.37     R6_2.6.1          fastmap_1.2.0     xfun_0.52        
-##  [5] cachem_1.1.0      knitr_1.50        htmltools_0.5.8.1 rmarkdown_2.29   
-##  [9] lifecycle_1.0.4   cli_3.6.3         zip_2.3.2         sass_0.4.10      
-## [13] data.table_1.17.0 jquerylib_0.1.4   compiler_4.4.1    rstudioapi_0.17.1
-## [17] tools_4.4.1       evaluate_1.0.3    bslib_0.9.0       yaml_2.3.10      
-## [21] rlang_1.1.5       jsonlite_2.0.0</code></pre>
+##  [1] vctrs_0.6.5       zip_2.3.3         cli_3.6.5         knitr_1.50       
+##  [5] rlang_1.1.6       xfun_0.53         stringi_1.8.7     purrr_1.1.0      
+##  [9] generics_0.1.4    jsonlite_2.0.0    glue_1.8.0        htmltools_0.5.8.1
+## [13] sass_0.4.10       rmarkdown_2.29    tibble_3.3.0      evaluate_1.0.5   
+## [17] jquerylib_0.1.4   fastmap_1.2.0     yaml_2.3.10       openxlsx_4.2.8   
+## [21] lifecycle_1.0.4   compiler_4.5.1    dplyr_1.1.4       pkgconfig_2.0.3  
+## [25] Rcpp_1.1.0        rstudioapi_0.17.1 digest_0.6.37     R6_2.6.1         
+## [29] utf8_1.2.6        tidyselect_1.2.1  pillar_1.11.1     bslib_0.9.0      
+## [33] tools_4.5.1       cachem_1.1.0</code></pre>
 </div>
 
 

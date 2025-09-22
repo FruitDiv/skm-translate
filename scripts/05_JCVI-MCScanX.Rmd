@@ -1,5 +1,5 @@
 ---
-title: "05_JCVI-MCScanX"
+title: "05_JCVI-MCScan"
 author: "zagor"
 date: "`r Sys.Date()`"
 output:
@@ -47,6 +47,7 @@ gc()
 
 
 library(magrittr)
+library(data.table)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
@@ -55,33 +56,103 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ```
 
-# plant selection
 
-```{r}
+# stu exception
 
-fp = file.path('..', 'input', 'JCVI', 'IDs')
-fl = list.files(fp)
+```{r, stu_read}
 
-myList = NULL
 
-for (i in fl) {
-  # print(i)
-  lines = data.table::fread(file.path(fp, i), header = FALSE)
-  ids = lines[, 4]
-  colnames(ids) = 'ID'
-  ids$plant = sub('\\..*', '', i)
-  myList = rbind(myList, ids)
-
+# download and read Excel files
+read_excel_from_url <- function(url, start_row = 1, columns = NULL) {
+  temp_file = tempfile(fileext = ".xlsx")
+  utils::download.file(url, destfile = temp_file, mode = "wb")
+  data = openxlsx::read.xlsx(temp_file, startRow = start_row)
+  if (!is.null(columns)) data = data[, columns]
+  return(data)
 }
 
-athList = myList[myList$plant == 'ath', ]
+# DMT2DMG in unitato
+dmt_url = "https://raw.githubusercontent.com/NIB-SI/unitato/main/output/Phureja_v4-v6.1_annotations.xlsx"
+dmt_cols = c("geneID", "v4_PGSC_DMT")
+dmt_data = read_excel_from_url(dmt_url, start_row = 3, columns = dmt_cols)
+dmt_data = dmt_data[!is.na(dmt_data$v4_PGSC_DMT), ]
+data.table::setDT(dmt_data)
+
+# generic converter table - not all in unitato and not all unitati DMG in zhis one (e.g.chrUn)
+zip_url = "https://github.com/NIB-SI/unitato/raw/main/input/Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt.zip"
+zip_file = tempfile(fileext = ".zip")
+temp_dir = tempdir()
+utils::download.file(zip_url, zip_file, mode = "wb")
+utils::unzip(zip_file, exdir = temp_dir)
+converter_file = file.path(temp_dir, "Solanum_tuberosum_PGSC_DM_v3.4_converterWithDescriptions.txt")
+converter_data = data.table::fread(converter_file, sep = "\t", header = FALSE, fill = TRUE, quote = "")
+converter_data = converter_data[, .(V1, V2)]
+data.table::setnames(converter_data, names(dmt_data))
+DMT2DMG = unique(rbind(dmt_data, converter_data))
+data.table::setnames(DMT2DMG, c("geneID", "v4_PGSC_DMT"))
 
 
 ```
 
-# input
+# params
 
-```{r}
+```{r, params}
+
+params_list = list(
+  list(to_plant = 'stuUniTato', stp = 'stu', # standardised plant abbreviation 
+       to_sub_pattern = "(\\.[0-9]+)+$"), # numbers after last dots marking gene: .1 or .1.1 + exception
+  list(to_plant = 'stuv6', stp = 'stu6', # standardised plant abbreviation 
+       to_sub_pattern = "(\\.[0-9]+)+$"), # numbers after last dots marking gene: .1 or .1.1 + exception
+  list(to_plant = 'stuv4', stp = 'stu4', # standardised plant abbreviation 
+       to_sub_pattern = "(\\.[0-9]+)+$"), # numbers after last dots marking gene: .1 or .1.1 + exception
+  
+  list(to_plant = 'slyv4', stp = 'sly4', # standardised plant abbreviation 
+       to_sub_pattern = "(\\.[0-9]+)+$"), # # numbers after last dots marking gene
+  list(to_plant = 'slyv5', stp = 'sly', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]*$"), # everythin after the last dot
+  
+  list(to_plant = 'vvi12Xv2', stp = 'vvi3', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]*$"), # everythin after the last dot
+  list(to_plant = 'vviT2Tv5', stp = 'vvi', # standardised plant abbreviation 
+       to_sub_pattern = "_[^_]*$"), # remove everything second from the last '_'
+    
+  list(to_plant = 'mdoGDv1', stp = 'mdo1', # standardised plant abbreviation 
+       to_sub_pattern = ""), #
+  list(to_plant = 'mdoHChap1', stp = 'mdo', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]*$"), # everythin after the last dot
+  
+  list(to_plant = 'ppe', stp = 'ppe', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]*$"), # everythin after the last dot
+  list(to_plant = 'almond', stp = 'pdul', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]*$"), # everythin after the last dot
+  list(to_plant = 'wildcherry', stp = 'pavi', # standardised plant abbreviation 
+       to_sub_pattern = "-[^-]*$"), # T1, T2, T3 in .bed file have the same coord
+  list(to_plant = 'apricot', stp = 'parm', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]+\\.[^.]+$"), # .t1.p1_1
+  
+  list(to_plant = 'cherryplum', stp = 'pcer', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]+\\.[^.]+$"), # .t1.p1_1
+  list(to_plant = 'pear'
+       , stp = 'pcox'# standardised plant abbreviation 
+       , to_sub_pattern = "\\.[^.]*$"
+       ), # .t1.p1_1
+   list(to_plant = 'siberianapricot', stp = 'psib', # standardised plant abbreviation 
+       to_sub_pattern = "\\.[^.]+\\.[^.]+$") # .t1.p1_1
+  
+)
+
+
+pattern_map = purrr::map_chr(params_list, "to_sub_pattern") %>%
+  setNames(purrr::map_chr(params_list, "to_plant"))
+pattern_mapP = purrr::map_chr(params_list, "stp") %>%
+  setNames(purrr::map_chr(params_list, "to_plant"))
+
+```
+
+
+# MCScan raw
+
+```{r, MCScan_read}
 
 fp = file.path('..', 'input', 'JCVI')
 files_all = list.files(path = fp, full.names = TRUE)
@@ -91,41 +162,80 @@ fl = fl[grep('anchors', fl)]
 df = NULL
 
 for (i in fl) {
+  
+  print(i)
 
   lines = readLines(i)
   lines_clean = lines[!grepl("^#", lines)]
   text_data = paste(lines_clean, collapse = "\n")
   dt = data.table::fread(text = text_data, sep = "\t", header = FALSE,
               col.names = c("from_id", "to_id", "JCVI_value"))
+  
+  dt$from_id =gsub("\\..*$", "", dt$from_id)
+  plant = sub("\\..*$", "", basename(i))
+  dt$from_plant = plant
+  plant = sub("^[^.]*\\.([^.]+)\\..*$", "\\1", basename(i))
+  dt$to_plant = plant
+  # clean ID
+  dt$to_id = gsub(pattern_map[grep(plant, names(pattern_map))][[1]], "", dt$to_id)
+  
+  if (plant %in% c("stuv4", "stuUniTato")) {
+    setkey(DMT2DMG, v4_PGSC_DMT)
+    dt[DMT2DMG, on = .(to_id = v4_PGSC_DMT), to_id := i.geneID] 
+  }
+  
+  
   df = rbind(df, dt)
 
 }
-
-
-colnames(athList) = c('from_id', 'from_plant')
-df = merge(df, athList, by = c('from_id'), all = TRUE)
 
 
 ```
 
 # output
 
-```{r}
+```{r, output}
 
 
-colnames(myList) = c('to_id', 'to_plant')
-df = merge(df, myList, by = c('to_id'), all.x = TRUE)
-columns = c("from_id", "from_plant", "to_id", "to_plant", "JCVI_value")
+columns = c("from_id", "from_plant", "to_id", "to_plant")
 df = df[, ..columns]
 
 df$source = 'MCScanX'
-
+df = df[!is.na(df$to_id) & !is.na(df$from_id), ]
 
 df = df[!duplicated(df), ]
 
+df[, to_plant := pattern_mapP[to_plant]]
 
 
-file_path = '../intermediate/JCVI_MCScanX_plants.txt'
+df %>%
+  dplyr::group_by(to_plant) %>%
+  dplyr::slice_head(n = 2) %>%
+  dplyr::bind_rows(df %>% dplyr::group_by(to_plant) %>% dplyr::slice_tail(n = 2)) %>%
+  dplyr::arrange(to_plant) %>%
+  dplyr::ungroup() -> first_last_two_per_plant
+
+print(first_last_two_per_plant, n = nrow(first_last_two_per_plant))
+
+table(df$to_plant)
+
+colnames(df) = c("from",
+                 "from_plant",
+                 "to",
+                 "to_plant",
+                 "source")
+
+
+```
+
+
+# write and zip
+
+```{r, zip}
+
+
+
+file_path = '../intermediate/JCVI_MCScanX_cleaned.txt'
 data.table::fwrite(df, file_path, sep = '\t')
 root_dir = dirname(file_path)
 file_name = basename(file_path)
