@@ -165,7 +165,7 @@ pss_long = pss_long %>%
     .groups = "drop"
   )
 
-
+pss_long$all_pathways[pss_long$all_pathways == ""] = "/"
 
 ```
 
