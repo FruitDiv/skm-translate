@@ -165,12 +165,21 @@ pss_long = pss_long %>%
     .groups = "drop"
   )
 
+pss_long[pss_long == ""] = "-"
+gn[is.na(gn)] = "-"
+sn[is.na(sn)] = "-"
+
+ath.annot = pss_long %>%
+  dplyr::full_join(gn, by = c("id" = "V1")) %>%
+  dplyr::full_join(sn, by = c("id" = "V1"))
+
 
 
 ```
 
 
-**Note**: be careful with 35.2 bin matches
+
+**Note**: 35.2 bin matcheswill be ignored
 
 
 # Abbreviations
@@ -185,7 +194,7 @@ pss_long = pss_long %>%
 | Prunus armeniaca              | apricot       | *apricot*    |                       |      | parm    | parm    | parm | parm     |
 | Prunus cerasifera             | cherry plum   | *cherryplum*  |                      |     |         | pcer    | pcer | pcer     |
 | Pyrus                         | pear          | *pear*        |                      |     |         | pcox    | pcox | pcox     |
-| Prunus sibirica               | Siberian apricot | *siberianapricot* |               |     |         | psib    | psib | psib     |
+| Prunus sibirica               | Siberian apricot | *siberianapricot* |               |     |  psib | psib    | psib | psib     |
 
 
 ```{r}
@@ -351,7 +360,7 @@ params_list <- list(
   plantName = 'psib'
   , plantNameOut = "siberianapricot"
   , plantDirOut = file.path('..', 'reports', group, "siberianapricot")
-  , flag = 4
+  , flag = 3
 )
 
 
@@ -365,61 +374,7 @@ cat(child_content)
 ```
 
 
-```{r}
 
-# Step 1: params_list
-# params_list <- list(
-# ...
-# )
-# 
-# Step 2: YAML header in 09_fruitTrees-child.Rmd
-# ---
-# title: "fruitTrees Child"
-# output: html_document
-# params:
-#   plantName1: NULL
-#   plantName2: NULL
-#   plantName3: NULL
-#   plantName4: NULL
-#   plantDirIn: NULL
-#   plantNameOut: NULL
-#   plantDirOut: NULL
-#   pattern_in: NULL
-#   pattern_out: NULL
-#   compara_pattern_in1: NULL
-#   compara_pattern_in2: NULL
-#   plaza_pattern_in1: NULL
-#   plaza_pattern_in2: NULL
-#   ref_genome: NULL
-#   mercator: NULL
-#   mercatorPatternIn1: NULL
-#   mercatorPatternOut1: NULL
-#   mercatorPatternIn2: NULL
-#   mercatorPatternOut2: NULL
-# ---
-# 
-# 
-# access params in the script like:
-# params$plantName1
-# params$plantDirOut
-# 
-# Step 3: Call render() like
-# rmarkdown::render(
-#   input = "09_fruitTrees-child.Rmd",
-#   params = params_list,
-#   envir = new.env(parent = globalenv()),  # optional: isolate execution
-#   output_format = "html_document",
-#   quiet = FALSE
-# )
-# 
-# 
-# This will:
-# Inject params_list into params$...
-# Knit the child Rmd in a separate process
-# Print progress to the console (quiet = FALSE)
-# Save an .html file to the working directory
-
-```
 
 
 

@@ -51,7 +51,7 @@ for (i in fl){
 }
 
 
-table(df$source)
+cat("Pre filter Sources:\n", table(df$source), "\n")
 
 colnames(df)[1] = "from_geneID"
 colnames(df)[3] = "to_geneID" 
@@ -76,21 +76,12 @@ df = df[!duplicated(df), ]
 ```{r,  echo=TRUE, warning=FALSE, message=FALSE, echo=TRUE, eval=TRUE}
 
 rm(list = setdiff(ls(), c("df",
-                          "ath.gmm", "gn", "sn", "pss_long", 
+                          "ath.gmm", "ath.annot", 
+                          "group", 
                           "plantName", 
                           "plantNameOut", 
                           "plantDirOut",
-                          "pattern_in", 
-                          "pattern_out", 
-                          "mercator", 
-                          "mercatorPatternIn1", 
-                          "mercatorPatternOut1", 
-                          "mercatorPatternIn2", 
-                          "mercatorPatternOut2",
                           "flag")))
-
-
-
 
 gc()
 
@@ -122,13 +113,13 @@ dt.wide = dt.wide[order(dt.wide$from_geneID, dt.wide$to_geneID), ]
 ```{r, chunk.label = paste0("upset_", plantName), echo=TRUE, eval=TRUE}
 
 if (flag == 1) {
-  source_cols = c("MCScanX", "compara", "PLAZA", 'OrthoDB', 'RBH', "FastOMA")
+  source_cols = c("MCScanX", "compara", "PLAZA", 'OrthoDB', "FastOMA", 'RBH')
 } else if (flag == 2) {
-  source_cols = c("MCScanX", "compara", 'OrthoDB', 'RBH', "FastOMA")
+  source_cols = c("MCScanX", "compara", 'OrthoDB', "FastOMA", 'RBH')
 } else if (flag == 3) {
-  source_cols = c("MCScanX", 'OrthoDB', 'RBH', "FastOMA")
+  source_cols = c("MCScanX", 'OrthoDB', "FastOMA", 'RBH')
 } else {
-  source_cols = c("MCScanX", 'RBH', "FastOMA")
+  source_cols = c("MCScanX", "FastOMA", 'RBH')
 }
 
 
@@ -199,17 +190,12 @@ dt.wide = dt.wide[, ..ind]
 ```{r, chunk.label = paste0("Ath-SKM-in-out_", plantName), echo=TRUE, eval=TRUE}
 
 df = merge(dt.wide, ath.gmm, by.x = 'from_geneID', by.y = 'IDENTIFIER', all.x = TRUE, all.y = FALSE)
+df = merge(df, ath.annot, by.x = 'from_geneID', by.y = 'id', all.x = TRUE)
 
-df = merge(df, gn, by.x = 'from_geneID', by.y = 'V1', all.x = TRUE) # 
-df = merge(df, sn, by.x = 'from_geneID', by.y = 'V1', all.x = TRUE) # 
-
-df = merge(df, pss_long, by.x = 'from_geneID', by.y = 'id', all.x = TRUE)
-
-nin = pss_long[which(!(pss_long$id %in% df$from_geneID)), ]
+nin = ath.annot[which(!(ath.annot$id[!is.na(ath.annot$all_pathways)] %in% df$from_geneID)), ]
 nin = nin[grep('^AT', nin$id), ]
 nin = merge(nin, ath.gmm, by.x = 'id', by.y = 'IDENTIFIER', all.x = TRUE)
-nin = merge(nin, gn, by.x = 'id', by.y = 'V1', all.x = TRUE)
-nin = merge(nin, sn, by.x = 'id', by.y = 'V1', all.x = TRUE)
+setorder(nin, short_name)
 
 openxlsx::write.xlsx(nin, 
                      paste0('../reports/', group, "/", plantNameOut, '/', plantNameOut , '-ath_pss_no-orthologues_2025-09-15.xlsx'), 
@@ -222,7 +208,7 @@ openxlsx::write.xlsx(nin,
 ```
 
 
-## fruitTrees plant gmm
+## plant gmm
 
 ```{r, chunk.label = paste0("plant-gmm_", plantName), echo=TRUE, eval=TRUE}
 
@@ -235,12 +221,12 @@ setDT(combined)
 combined[, plant := NULL]
 combined[, source := NULL]
 
-colnames(combined)[2:4] = paste('fruitTrees', colnames(combined)[2:4], sep = '_')
+colnames(combined)[2:4] = paste('plant', colnames(combined)[2:4], sep = '_')
 
 colnames(df)
 dt = merge(df, combined, by.x = 'to_geneID', by.y = 'IDENTIFIER', all.x = TRUE, all.y = FALSE)
-table(is.na(dt$fruitTrees_BINCODE))
-dt[is.na(dt$fruitTrees_BINCODE), ]$to_geneID # check ones with strange ID
+table(is.na(dt$plant_BINCODE))
+dt[is.na(dt$plant_BINCODE), ]$to_geneID # check ones with strange ID
 
 dt_cols = colnames(df)
 new_cols = setdiff(colnames(dt), c(dt_cols))
@@ -254,20 +240,13 @@ df = dt[, c(dt_cols, new_cols)]
 
 ```{r, echo=TRUE, eval=TRUE}
 
-rm(list = setdiff(ls(), c("df", 
-                          "ath.gmm", "gn", "sn", "pss_long",  
+rm(list = setdiff(ls(), c("df",
+                          "ath.gmm", "ath.annot", 
+                          "group", 
                           "plantName", 
                           "plantNameOut", 
-                          "plantDirOut", 
-                          "pattern_in", 
-                          "pattern_out", 
-                          "mercator", 
-                          "mercatorPatternIn1", 
-                          "mercatorPatternOut1", 
-                          "mercatorPatternIn2", 
-                          "mercatorPatternOut2",
+                          "plantDirOut",
                           "flag")))
-
 
 gc()
 
@@ -289,48 +268,50 @@ df = df[!duplicated(df), ]
 
 
 compare_bin <- function(athMercator, plantXMercator) {
-  # split string by | then by ; and trim tokens,
-  # then truncate each token to first three dot-separated levels
-  split_tokens = function(code) {
-    if(is.na(code) || code == "") return(character(0))
-    parts = stringr::str_split(code, "\\|", simplify = TRUE)
-    tokens = unlist(lapply(parts, function(p) stringr::str_split(p, ";", simplify = TRUE)))
-    tokens = unique(stringr::str_trim(tokens))
+  # Helper: Split and truncate tokens to first 3 dot-separated levels
+  split_tokens <- function(code) {
+    if (is.na(code) || trimws(code) == "") return(character(0))
     
-    # For each token, extract first 3 dot levels
-    trunc3levels = function(token) {
-      levels = unlist(stringr::str_split(token, "\\."))
-      if(length(levels) > 3) {
-        levels = levels[1:3]
-      }
-      paste(levels, collapse = ".")
+    parts <- unlist(strsplit(code, "\\|"))
+    tokens <- unlist(strsplit(parts, ";"))
+    tokens <- unique(trimws(tokens))
+    
+    trunc3levels <- function(token) {
+      levels <- unlist(strsplit(token, "\\."))
+      paste(head(levels, 3), collapse = ".")
     }
     
-    truncated_tokens = sapply(tokens, trunc3levels)
-    unique(truncated_tokens)
+    unique(sapply(tokens, trunc3levels))
   }
   
-  bin_set = split_tokens(athMercator)
-  v4_set = split_tokens(plantXMercator)
+  bin_set <- split_tokens(athMercator)
+  v4_set <- split_tokens(plantXMercator)
   
-  # Tokens that are common between sets truncated to 3 levels
-  common_tokens = intersect(bin_set, v4_set)
-  
-  # Check if plantXMercator is exact duplication of athMercator token(s) (all plantXMercator tokens equal truncated bin_set token(s))
-  v4_parts = stringr::str_split(plantXMercator, "\\|", simplify = TRUE)
-  if(length(bin_set) == 1 &&
-     length(v4_parts) > 1 &&
-     all(split_tokens(plantXMercator) == bin_set)) {
-    return(paste0("100% match based on ", bin_set))
+  # If both sets are empty, return "no match"
+  if (length(bin_set) == 0 && length(v4_set) == 0) {
+    return("no match")
   }
   
-  # Check if sets are identical
-  if(setequal(bin_set, v4_set)) {
-    return(paste0("100% match based on ", paste(bin_set, collapse = ", ")))
+  # Check for redundant annotation (e.g. "35.2|35.2|35.2")
+  v4_parts <- unlist(strsplit(plantXMercator, "\\|"))
+  if (length(bin_set) == 1 &&
+      length(v4_parts) > 1 &&
+      all(split_tokens(plantXMercator) == bin_set)) {
+    result <- paste0("100% match based on ", bin_set)
+    if (result == "100% match based on 35.2") return("bad MapMan")
+    return(result)
   }
   
-  # Partial match if any tokens overlap, mention those tokens
-  if(length(common_tokens) > 0) {
+  # Check for exact match
+  if (setequal(bin_set, v4_set) && length(bin_set) > 0) {
+    result <- paste0("100% match based on ", paste(bin_set, collapse = ", "))
+    if (result == "100% match based on 35.2") return("bad MapMan")
+    return(result)
+  }
+  
+  # Check for partial match
+  common_tokens <- intersect(bin_set, v4_set)
+  if (length(common_tokens) > 0) {
     return(paste0("partial match based on ", paste(common_tokens, collapse = ", ")))
   }
   
@@ -341,10 +322,10 @@ compare_bin <- function(athMercator, plantXMercator) {
 
 df = df %>%
   dplyr::rowwise() %>%
-  dplyr::mutate(MapMan4_Match = compare_bin(ath_BINCODE, fruitTrees_BINCODE)) %>% # change name 
+  dplyr::mutate(MapMan4_Match = compare_bin(ath_BINCODE, plant_BINCODE)) %>% # change name 
   dplyr::ungroup()
 
-
+table(df$ath_BINCODE[df$MapMan4_Match == "bad MapMan"], df$plant_BINCODE[df$MapMan4_Match == "bad MapMan"])
 
 ```
 
@@ -355,19 +336,14 @@ df = df %>%
 ```{r, chunk.label = paste0("filter_", plantName), echo=TRUE, eval=TRUE}
 
 
-# now
-
 cat('####  ####  before filter ####  ####  \n')
-length(unique(df$from_geneID))
-length(unique(df$to_geneID))
-
-range(df$from_count)
-range(df$to_count)
-
-length(unique(df$from_geneID[df$from_count > 30]))
-length(unique(df$to_geneID[df$to_count > 30]))
-cat('####  ####  ####  ####  \n')
-
+cat("\t# ath unigue genes:", length(unique(df$from_geneID)), "\n",
+    "\t#", plantName, "unigue genes:", length(unique(df$to_geneID)), "\n",
+    "\t# ath highest connection degree: ", range(df$from_count)[2], "\n",
+    "\t#", plantName, "highest connection degree: ", range(df$to_count)[2], "\n",
+    "\t# genes in ath with degree > 30: ", length(unique(df$from_geneID[df$from_count > 30])), "\n",
+    "\t# genes in", plantName, "with degree > 30: ", length(unique(df$to_geneID[df$to_count > 30])), "\n\n"
+    )
 
 dt = as.data.table(df)
 dt[, filter_criteria := "reject"]
@@ -375,31 +351,38 @@ covered_genes = character()
 
 
 if (flag == 1) {
-  methods = c("MCScanX", "compara", "PLAZA", 'OrthoDB', 'RBH', "FastOMA")
+  methods = c("MCScanX", "compara", "PLAZA", 'OrthoDB', "FastOMA", 'RBH')
 } else if (flag == 2) {  # make flags
-  methods = c("MCScanX", "compara", 'OrthoDB', 'RBH', "FastOMA")
+  methods = c("MCScanX", "compara", 'OrthoDB', "FastOMA", 'RBH')
 } else if (flag == 3) {
-  methods = c("MCScanX", 'OrthoDB', 'RBH', "FastOMA")
+  methods = c("MCScanX", 'OrthoDB', "FastOMA", 'RBH')
 } else {
-  methods = c("MCScanX", 'RBH', "FastOMA")
+  methods = c("MCScanX", "FastOMA", 'RBH')
 }
 
 
-match_categories = c("no match", "100% match based", "partial match")
-
-long_dt = data.table::rbindlist(lapply(methods, function(method) {
+match_categories = c("no match", "100% match", "partial match", "bad MapMan")
+long_dt = rbindlist(lapply(methods, function(method) {
   dt[, .(
     Method = method,
-    Match_Type = c("no match", "100% match based", "partial match"),
+    Match_Type = match_categories,
     Count = c(
       sum(get(method) == TRUE & MapMan4_Match == "no match"),
-      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "100% match based")),
-      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "partial match"))
+      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "^100% match")),
+      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "^partial match")),
+      sum(get(method) == TRUE & MapMan4_Match == "bad MapMan")
     )
   )]
 }), use.names = TRUE)
-
-long_dt[, Match_Type := factor(Match_Type, levels = c("no match", "partial match", "100% match based"))]
+# Rename "bad MapMan" to "35.2"
+long_dt[, Match_Type := factor(
+  fcase(
+    as.character(Match_Type) == "bad MapMan", "35.2",
+    default = as.character(Match_Type)
+  ),
+  levels = c("no match", "35.2", "partial match", "100% match")
+)]
+long_dt[, Match_Type := factor(Match_Type, levels = c("no match", "35.2", "partial match", "100% match"))]
 
 ggplot2::ggplot(long_dt, ggplot2::aes(x = Method, y = Count, fill = Match_Type)) +
   ggplot2::geom_bar(stat = "identity") +
@@ -407,8 +390,10 @@ ggplot2::ggplot(long_dt, ggplot2::aes(x = Method, y = Count, fill = Match_Type))
                 x = "Method",
                 y = "Count",
                 fill = "Match Type") +
+  ggplot2::scale_fill_brewer(palette = "Set3", direction = -1) +
   ggplot2::theme_minimal() +
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+
 ggplot2::ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOut, "-before_filter1.pdf"), 
                 device = "pdf", width = 6, height = 6, units = "in")
 
@@ -419,18 +404,20 @@ table(dtsub$MapMan4_Match)
 table(dtsub$count_evidence, dtsub$MapMan4_Match)
 tab = as.data.table(as.data.frame(table(dtsub$count_evidence, dtsub$MapMan4_Match)))
 setnames(tab, c("count_evidence", "MapMan4_Match", "Freq"))
-
-tab$MapMan4_Match = as.character(tab$MapMan4_Match)
-tab$MapMan4_Match = factor(tab$MapMan4_Match, levels = c('no match', 'partial match ', '100% match '))
-
+tab$MapMan4_Match = stringr::str_trim(as.character(tab$MapMan4_Match), side = "right")
+tab$MapMan4_Match <- factor(
+  ifelse(tab$MapMan4_Match == "bad MapMan", "35.2", tab$MapMan4_Match),
+  levels = c("no match", "35.2", "partial match", "100% match")
+)
 ggplot(tab, aes(x = factor(count_evidence), y = Freq, fill = MapMan4_Match)) +
   geom_bar(stat = "identity") +
-  labs(title = "Frequency of count_evidence by MapMan4_Match",
+  labs(title = "Consistency of MapMan Match by # methods coverage",
        x = "count_evidence",
        y = "Frequency",
        fill = "MapMan4_Match") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggplot2::scale_fill_brewer(palette = "Set3", direction = -1)
 ggplot2::ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOut, "-before_filter2.pdf"), 
                 device = "pdf", width = 6, height = 6, units = "in")
 
@@ -438,9 +425,9 @@ ggplot2::ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOu
 
 
 if (flag != 4) {
-  special_methods = c("OrthoDB", "RBH", "FastOMA")
+  special_methods = c("OrthoDB", "FastOMA", 'RBH')
 } else {
-  special_methods = c("RBH", "FastOMA")
+  special_methods = c("FastOMA", 'RBH')
 }
 
 # Initialize a named vector to count method_MapMan4 assignments
@@ -476,9 +463,6 @@ for (method in methods) {
           new_criteria = paste(sort(covered_by), collapse = "_")
         } else if (count_covered == 1) {
           # Check MapMan4_Match string contains "match based on" and method name (case-insensitive)
-          # reconsider
-          # (grepl("match based on", mapman_val, ignore.case = TRUE) &&
-          #   !grepl("^100% match based on 35\\.2$", mapman_val)) # for flags 3
           if (grepl("match based on", row$MapMan4_Match, ignore.case = TRUE)) {
             is_candidate = TRUE
             new_criteria = paste0(method, "_MapMan4")
@@ -490,33 +474,30 @@ for (method in methods) {
         
         if (is_candidate) {
           dt[i, filter_criteria := new_criteria]
-          # covered_genes = unique(c(covered_genes, row$to_geneID, row$from_geneID))
+          # covered_genes = unique(c(covered_genes, row$to_geneID, row$from_geneID)) # if you want to remove both IDs from pair
           covered_genes = unique(c(covered_genes, row$to_geneID))
         }
       }
     } else {
       dt[candidates, filter_criteria := method]
-      # covered_genes = unique(c(covered_genes, dt[candidates, unique(to_geneID)], dt[candidates, unique(from_geneID)]))
+      # covered_genes = unique(c(covered_genes, dt[candidates, unique(to_geneID)], dt[candidates, unique(from_geneID)])) # if you want to remove both IDs from pair
       covered_genes = unique(c(covered_genes, dt[candidates, unique(to_geneID)]))
     }
   }
 }
 
 # After the loop, print checkpoint counts for method_MapMan4 assignments
-print("MapMan4 assignment counts per method:")
+cat('####  ####  MapMan4 assignment counts per method ####  ####  \n')
 print(mapman4_counts)
 
-cat('####  ####  ####  ####  \n')
-table(dt$filter_criteria)
-cat('####  ####  ####  ####  \n')
 
 df = dt
 
 data.table::fwrite(df, 
-                   paste0('../reports/', group, "/", plantNameOut, '/y_', plantNameOut, '-ath_orthologues-all_2025-09-15.txt'), 
+                   paste0('../reports/', group, "/", plantNameOut, '/', plantNameOut, '-ath_orthologues-all_2025-09-15.txt'), 
                    sep = '\t')
 openxlsx::write.xlsx(df, 
-                     paste0('../reports/', group, "/", plantNameOut, '/y_', plantNameOut, '-ath_orthologues-all_2025-09-15.xlsx'), 
+                     paste0('../reports/', group, "/", plantNameOut, '/', plantNameOut, '-ath_orthologues-all_2025-09-15.xlsx'), 
                      asTable = TRUE)
 
 
@@ -531,7 +512,6 @@ openxlsx::write.xlsx(df,
 rejected = df[df$filter_criteria == 'reject', ]
 kept = df[df$filter_criteria != 'reject', ]
 
-
 # Update counts by reference in dt.wide (no merge needed)
 setDT(df)
 df[, from_count := .N, by = from_geneID]
@@ -541,9 +521,6 @@ kept[, from_count := .N, by = from_geneID]
 kept[, to_count := .N, by = to_geneID]
 
 
-
-
-
 par(mfrow = c(2,2))
 xlim = c(0,100)
 h1 = hist(df$from_count, plot = FALSE, breaks = "Sturges")
@@ -551,68 +528,81 @@ h2 = hist(kept$from_count, plot = FALSE, breaks = "Sturges")
 h3 = hist(df$to_count, plot = FALSE, breaks = "Sturges")
 h4 = hist(kept$to_count, plot = FALSE, breaks = "Sturges")
 max_count = max(c(h1$counts, h2$counts, h3$counts, h4$counts))
-hist(df$from_count, main = "df$from_count", xlab = "from_count", xlim = xlim, ylim = c(0, max_count))
-hist(kept$from_count, main = "kept$from_count", xlab = "from_count", xlim = xlim, ylim = c(0, max_count))
-hist(df$to_count, main = "df$to_count", xlab = "to_count", xlim = xlim, ylim = c(0, max_count))
-hist(kept$to_count, main = "kept$to_count", xlab = "to_count", xlim = xlim, ylim = c(0, max_count))
+hist(df$from_count, main = "ath", xlab = "from_count", xlim = xlim, ylim = c(0, max_count))
+hist(kept$from_count, main = "ath kept", xlab = "from_count", xlim = xlim, ylim = c(0, max_count))
+hist(df$to_count, main = plantName, xlab = "to_count", xlim = xlim, ylim = c(0, max_count))
+hist(kept$to_count, main = paste(plantName, "kept"), xlab = "to_count", xlim = xlim, ylim = c(0, max_count))
 par(mfrow = c(1,1))
-mtext("Before and afer filter", side = 3, line = -1.5, outer = TRUE, cex = 1.5)
+mtext("Degrees before and afer filter", side = 3, line = -1.5, outer = TRUE, cex = 1.5)
 
 
-long_kept = data.table::rbindlist(lapply(methods, function(method) {
+long_dt = rbindlist(lapply(methods, function(method) {
   kept[, .(
     Method = method,
-    Match_Type = c("no match", "100% match based", "partial match"),
+    Match_Type = match_categories,
     Count = c(
       sum(get(method) == TRUE & MapMan4_Match == "no match"),
-      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "100% match based")),
-      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "partial match"))
+      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "^100% match")),
+      sum(get(method) == TRUE & stringr::str_detect(MapMan4_Match, "^partial match")),
+      sum(get(method) == TRUE & MapMan4_Match == "bad MapMan")
     )
   )]
 }), use.names = TRUE)
-
-long_kept[, Match_Type := factor(Match_Type, levels = c("no match", "partial match", "100% match based"))]
-
-ggplot2::ggplot(long_kept, ggplot2::aes(x = Method, y = Count, fill = Match_Type)) +
+# Rename "bad MapMan" to "35.2"
+long_dt[, Match_Type := factor(
+  fcase(
+    as.character(Match_Type) == "bad MapMan", "35.2",
+    default = as.character(Match_Type)
+  ),
+  levels = c("no match", "35.2", "partial match", "100% match")
+)]
+long_dt[, Match_Type := factor(Match_Type, levels = c("no match", "35.2", "partial match", "100% match"))]
+ggplot2::ggplot(long_dt, ggplot2::aes(x = Method, y = Count, fill = Match_Type)) +
   ggplot2::geom_bar(stat = "identity") +
-  ggplot2::labs(title = "MapMan match types count per method (after filter)",
+  ggplot2::labs(title = "MapMan match types count per method (post filter)",
                 x = "Method",
                 y = "Count",
                 fill = "Match Type") +
+  ggplot2::scale_fill_brewer(palette = "Set3", direction = -1) +
   ggplot2::theme_minimal() +
   ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 ggplot2::ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOut, "-after_filter1.pdf"), 
                 device = "pdf", width = 6, height = 6, units = "in")
 
 
-keptsub = kept[, .SD, .SDcols = grep("count_evidence|MapMan4_Match", names(kept), value = TRUE)] 
-keptsub$MapMan4_Match = sub('based on.*', '', keptsub$MapMan4_Match)
-table(keptsub$MapMan4_Match)
-table(keptsub$count_evidence, keptsub$MapMan4_Match)
-tab = as.data.table(as.data.frame(table(keptsub$count_evidence, keptsub$MapMan4_Match)))
+dtsub = kept[, .SD, .SDcols = grep("count_evidence|MapMan4_Match", names(dt), value = TRUE)] 
+dtsub$MapMan4_Match = sub('based on.*', '', dtsub$MapMan4_Match)
+table(dtsub$MapMan4_Match)
+table(dtsub$count_evidence, dtsub$MapMan4_Match)
+tab = as.data.table(as.data.frame(table(dtsub$count_evidence, dtsub$MapMan4_Match)))
 setnames(tab, c("count_evidence", "MapMan4_Match", "Freq"))
-
-tab$MapMan4_Match = as.character(tab$MapMan4_Match)
-tab$MapMan4_Match = factor(tab$MapMan4_Match, levels = c('no match', 'partial match ', '100% match '))
-
+tab$MapMan4_Match = stringr::str_trim(as.character(tab$MapMan4_Match), side = "right")
+tab$MapMan4_Match <- factor(
+  ifelse(tab$MapMan4_Match == "bad MapMan", "35.2", tab$MapMan4_Match),
+  levels = c("no match", "35.2", "partial match", "100% match")
+)
 ggplot(tab, aes(x = factor(count_evidence), y = Freq, fill = MapMan4_Match)) +
   geom_bar(stat = "identity") +
-  labs(title = "Frequency of count_evidence by MapMan4_Match (after filter)",
+  labs(title = "Consistency of MapMan Match by # methods coverage (post filter)",
        x = "count_evidence",
        y = "Frequency",
        fill = "MapMan4_Match") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggplot2::scale_fill_brewer(palette = "Set3", direction = -1)
 ggplot2::ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOut, "-after_filter2.pdf"), 
                 device = "pdf", width = 6, height = 6, units = "in")
 
 
 keptsub = kept[, .SD, .SDcols = grep("FastOMA|MCScanX|OrthoDB|PLAZA|RBH|compara|count_evidence|MapMan4_Match|filter_criteria", 
                                      names(kept), value = TRUE)] 
+# rename 'bad MapMan' to '35.2'
 keptsub$MapMan4_Match = sub(' based on.*', '', keptsub$MapMan4_Match)
+keptsub$MapMan4_Match = ifelse(keptsub$MapMan4_Match == "bad MapMan", "35.2", keptsub$MapMan4_Match)
+# frequency table
 tab = as.data.table(as.data.frame(table(keptsub$count_evidence, keptsub$filter_criteria, keptsub$MapMan4_Match)))
 setnames(tab, c("count_evidence", "filter_criteria", "MapMan4_Match", "Freq"))
-tab$MapMan4_Match = factor(tab$MapMan4_Match, levels = c('no match', 'partial match', '100% match'))
+# Filter
 tab = tab[Freq > 0]
 tab[, count_evidence := factor(count_evidence)]
 tab[, filter_criteria := factor(filter_criteria, levels = c("MCScanX", "compara", "PLAZA",
@@ -620,19 +610,18 @@ tab[, filter_criteria := factor(filter_criteria, levels = c("MCScanX", "compara"
                                                     "FastOMA_OrthoDB", "OrthoDB_FastOMA", "OrthoDB_RBH", "FastOMA_RBH", 
                                                     "OrthoDB_MapMan4", "RBH_MapMan4", "FastOMA_MapMan4"
                                                     ))]
-tab[, MapMan4_Match := factor(MapMan4_Match, levels = c('no match', 'partial match', '100% match'))]
-
-
+tab[, MapMan4_Match := factor(MapMan4_Match, levels = c('no match', '35.2', 'partial match', '100% match'))]
 ggplot(tab, aes(x = filter_criteria, y = Freq, fill = MapMan4_Match)) +
   geom_bar(stat = "identity") +
   facet_wrap(~ count_evidence, nrow = 2, drop = TRUE) +
   labs(
-    title = "Frequency by MapMan4_Match (after filter)",
-    x = "KG Criteria",
+    title = "Selection by method and methods coverage",
+    x = "Filter criteria",
     y = "Frequency",
     fill = "MapMan4 Match"
   ) +
   theme_minimal() +
+  ggplot2::scale_fill_brewer(palette = "Set3", direction = -1) + 
   theme(
     axis.text.x = element_text(angle = 90, hjust = 1),
     panel.border = element_rect(color = "black", fill = NA, size = 1),  # border around each facet
@@ -642,7 +631,7 @@ ggplot2::ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOu
 
 
 openxlsx::write.xlsx(rejected, 
-                     paste0('../reports/', group, "/", plantNameOut, '/y_', plantNameOut, '-ath_orthologues-removed_2025-09-15.xlsx'), 
+                     paste0('../reports/', group, "/", plantNameOut, '/', plantNameOut, '-ath_orthologues-removed_2025-09-15.xlsx'), 
                      asTable = TRUE)
 
 
@@ -662,21 +651,19 @@ kept = merge(kept, membership_dt, by.x = "from_geneID", by.y = "geneID", all.x =
 # kept[, weak_component := from_component]
 #  # cleanup
 # kept[, c("from_component", "to_component") := NULL]
-
-
 openxlsx::write.xlsx(kept, 
-                     paste0('../output/y_', plantNameOut , '-ath_orthologues-kept_2025-09-15.xlsx'), 
+                     paste0('../output/', plantNameOut , '-ath_orthologues-kept_2025-09-15.xlsx'), 
                      asTable = TRUE)
 
 
 if (flag == 1) {
-  source_cols = c("MCScanX", "compara", "PLAZA", 'OrthoDB', 'RBH', "FastOMA")
+  source_cols = c("MCScanX", "compara", "PLAZA", 'OrthoDB', "FastOMA", 'RBH')
 } else if (flag == 2) {  # make flags
-  source_cols = c("MCScanX", "compara", 'OrthoDB', 'RBH', "FastOMA")
+  source_cols = c("MCScanX", "compara", 'OrthoDB', "FastOMA", 'RBH')
 } else if (flag == 3) {
-  source_cols = c("MCScanX", 'OrthoDB', 'RBH', "FastOMA")
+  source_cols = c("MCScanX", 'OrthoDB', "FastOMA", 'RBH')
 } else {
-  source_cols = c("MCScanX", 'RBH', "FastOMA")
+  source_cols = c("MCScanX", "FastOMA", 'RBH')
 }
 
 # https://krassowski.github.io/complex-upset/articles/Examples_R.html
@@ -704,16 +691,35 @@ ggsave(paste0("../reports/", group, "/", plantNameOut, '/', plantNameOut, "_upse
 
 
 cat('####  ####  after filter ####  ####  \n')
-length(unique(kept$from_geneID))
-length(unique(kept$to_geneID))
+cat("\t# ath unigue genes:", length(unique(kept$from_geneID)), "\n",
+    "\t#", plantName, "unigue genes:", length(unique(kept$to_geneID)), "\n",
+    "\t# ath highest connection degree: ", range(kept$from_count)[2], "\n",
+    "\t#", plantName, "highest connection degree: ", range(kept$to_count)[2], "\n",
+    "\t# genes in ath with degree > 30: ", length(unique(kept$from_geneID[kept$from_count > 30])), "\n",
+    "\t# genes in", plantName, "with degree > 30: ", length(unique(kept$to_geneID[kept$to_count > 30])), "\n\n"
+    )
 
-range(kept$from_count)
-range(kept$to_count)
 
-length(unique(kept$from_geneID[kept$from_count > 30]))
-length(unique(kept$to_geneID[kept$to_count > 30]))
-cat('####  ####  ####  ####  \n')
-
+filter_counts = as.data.table(table(dt$filter_criteria))
+setnames(filter_counts, c("filter_criteria", "Count"))
+# Define desired order
+desired_order = c(
+  "MCScanX",
+  "compara",
+  "PLAZA",
+  "OrthoDB_FastOMA_RBH",
+  "OrthoDB_RBH",
+  "FastOMA_OrthoDB",
+  "FastOMA_RBH",
+  "OrthoDB_MapMan4",
+  "RBH_MapMan4",
+  "FastOMA_MapMan4",
+  "reject"
+)
+filter_counts = filter_counts[filter_criteria %in% desired_order]
+filter_counts[, filter_criteria := factor(filter_criteria, levels = desired_order)]
+setorder(filter_counts, filter_criteria)
+print(filter_counts)
 
 ```
 
@@ -723,18 +729,18 @@ cat('####  ####  ####  ####  \n')
 
 ```{r,  chunk.label = paste0("pss-kept-removed_", plantName), echo=TRUE, eval=TRUE}
 
-
-pss_long = pss_long[, grep("id$|all_pathways$|short_name$", colnames(pss_long))]
-pss_long = pss_long[!duplicated(pss_long), ]
-pss_long = merge(pss_long, 
+pss = ath.annot[which(!is.na(ath.annot$all_pathways)), ]
+pss = pss[, grep("id$|all_pathways$|short_name$", colnames(pss))]
+pss = pss[!duplicated(pss), ]
+pss = merge(pss, 
                  df[, .SD, .SDcols = grep("from_geneID|to_geneID|ath_BINCODE|ath_NAME|ath_DESCRIPTION|athName|athSynonims|MapMan4_Match|filter_criteria", 
                                           names(dt), value = TRUE)],
                  by.x = 'id', by.y = 'from_geneID', all.x = TRUE, all.y = FALSE)
-pss_long = pss_long[grep('^AT', pss_long$id), ]
-pss_long = pss_long[!duplicated(pss_long), ]
-table(pss_long$filter_criteria)
+pss = pss[grep('^AT', pss$id), ]
+pss = pss[!duplicated(pss), ]
+table(pss$filter_criteria)
 
-openxlsx::write.xlsx(pss_long, 
+openxlsx::write.xlsx(pss, 
                      paste0('../reports/', group, "/", plantNameOut, '/', plantNameOut, '-ath_pss_orthologues-kept-rejected_2025-09-15.xlsx'), 
                      asTable = TRUE)
 

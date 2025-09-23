@@ -11,7 +11,7 @@
 
 <meta name="author" content="zagor" />
 
-<meta name="date" content="2025-09-22" />
+<meta name="date" content="2025-09-23" />
 
 <title>06_OrthoDB</title>
 
@@ -1571,7 +1571,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">06_OrthoDB</h1>
 <h4 class="author">zagor</h4>
-<h4 class="date">2025-09-22</h4>
+<h4 class="date">2025-09-23</h4>
 
 </div>
 
@@ -1579,8 +1579,8 @@ border-radius: 0px;
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list =</span> <span class="fu">ls</span>(<span class="at">all =</span> <span class="cn">TRUE</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">gc</span>()</span></code></pre></div>
 <pre><code>##           used (Mb) gc trigger (Mb) max used (Mb)
-## Ncells  625000 33.4    1434690 76.7   702048 37.5
-## Vcells 1171023  9.0    8388608 64.0  1927980 14.8</code></pre>
+## Ncells  625117 33.4    1435024 76.7   702048 37.5
+## Vcells 1171777  9.0    8388608 64.0  1927980 14.8</code></pre>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
@@ -1632,6 +1632,10 @@ border-radius: 0px;
 <tr class="even">
 <td>29760_0</td>
 <td>vvi</td>
+</tr>
+<tr class="odd">
+<td>3702_0</td>
+<td>ath</td>
 </tr>
 </tbody>
 </table>
@@ -1885,21 +1889,109 @@ genomes</h1>
 ## 17 AT2G15790 ath        PruarM.8G195500           parm     OrthoDB
 ## 18 AT4G34660 ath        PruarM.8G163400           parm     OrthoDB</code></pre>
 </div>
-<div id="write-and-zip" class="section level1" number="7">
-<h1><span class="header-section-number">7</span> write and zip</h1>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/OrthoDB_cleaned.txt&#39;</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(combo, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
+<div id="orthodb-custom" class="section level1" number="7">
+<h1><span class="header-section-number">7</span> OrthoDB custom</h1>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># 404 ERROR</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="co"># url = &quot;https://data.orthodb.org/current/odb12v1_species.tab.gz&quot;</span></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co"># destfile = tempfile(fileext = &quot;.gz&quot;)</span></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co"># download.file(url, destfile, mode = &quot;wb&quot;)</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a><span class="co"># species_map = fread(cmd = paste(&quot;zcat&quot;, destfile), header = FALSE, sep = &quot;\t&quot;)</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a><span class="co"># setnames(species_map, c(&quot;ncbi_tax_id&quot;, &quot;organism_id&quot;, &quot;scientific_name&quot;, </span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a><span class="co">#                         &quot;assembly_id&quot;, &quot;gene_count&quot;, &quot;og_count&quot;, &quot;mapping_type&quot;))</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a><span class="co"># head(species_map)</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a></span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a></span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>fp <span class="ot">=</span> <span class="fu">file.path</span>(<span class="st">&#39;..&#39;</span>, <span class="st">&#39;input&#39;</span>, <span class="st">&#39;OrthoDB&#39;</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>fn <span class="ot">=</span> <span class="st">&#39;odb12v1_OG2genes_fruitdiv.zip&#39;</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>odb <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="fu">file.path</span>(fp, fn), <span class="at">header =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="fu">colnames</span>(odb) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;og&#39;</span>, <span class="st">&#39;geneID&#39;</span>)</span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="fu">setDT</span>(odb)</span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>odb_ath <span class="ot">=</span> odb[stringr<span class="sc">::</span><span class="fu">str_starts</span>(geneID, <span class="st">&quot;3702_0&quot;</span>)]</span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="fu">colnames</span>(odb_ath)[<span class="dv">2</span>] <span class="ot">=</span> <span class="st">&quot;TAIR&quot;</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a>zip_path <span class="ot">=</span> <span class="fu">file.path</span>(fp, <span class="st">&quot;Psibirica_vs_Embryophyta.zip&quot;</span>)</span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a>zip_contents <span class="ot">&lt;-</span> <span class="fu">unzip</span>(zip_path, <span class="at">list =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="fu">print</span>(zip_contents<span class="sc">$</span>Name)</span></code></pre></div>
+<pre><code>## [1] &quot;5ef99905.og.annotations&quot; &quot;5ef99905.og.hits&quot;</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>target_file <span class="ot">=</span> zip_contents<span class="sc">$</span>Name[<span class="fu">grep</span>(<span class="st">&quot;hits&quot;</span>, zip_contents<span class="sc">$</span>Name)]</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">unzip</span>(zip_path, <span class="at">files =</span> target_file, <span class="at">exdir =</span> <span class="fu">tempdir</span>())</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>lines <span class="ot">=</span> <span class="fu">readLines</span>(<span class="fu">file.path</span>(<span class="fu">tempdir</span>(), target_file))</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co"># remove second and last line</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>lines <span class="ot">=</span> lines[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">2</span>, <span class="fu">length</span>(lines))]</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>dt <span class="ot">=</span> data.table<span class="sc">::</span><span class="fu">fread</span>(<span class="at">text =</span> <span class="fu">paste</span>(lines, <span class="at">collapse =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>))</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>dt <span class="ot">=</span> dt[, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>]</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="fu">setDT</span>(dt)</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="fu">table</span>(dt<span class="sc">$</span><span class="st">`</span><span class="at">#cluster_id</span><span class="st">`</span> <span class="sc">%in%</span> odb_ath<span class="sc">$</span>og)</span></code></pre></div>
+<pre><code>## 
+## FALSE  TRUE 
+##  8585 11375</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">table</span>(dt<span class="sc">$</span><span class="st">`</span><span class="at">#cluster_id</span><span class="st">`</span> <span class="sc">%in%</span> odb<span class="sc">$</span>og)</span></code></pre></div>
+<pre><code>## 
+## FALSE  TRUE 
+##  4131 15829</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>dtX <span class="ot">=</span> <span class="fu">merge</span>(odb, dt, <span class="at">by.x =</span> <span class="st">&#39;og&#39;</span>, <span class="at">by.y =</span> <span class="st">&quot;#cluster_id&quot;</span>, <span class="at">all.x =</span> <span class="cn">FALSE</span>, <span class="at">all.y =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>dtX[, species <span class="sc">:=</span> <span class="fu">sub</span>(<span class="st">&quot;:.*&quot;</span>, <span class="st">&quot;&quot;</span>, geneID)]</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a><span class="fu">table</span>(dtX<span class="sc">$</span>species)</span></code></pre></div>
+<pre><code>## 
+##  102107_0  106549_0 2094558_0  225117_0 2448454_0   29760_0   29760_1   36596_0 
+##     22782     29716     33986     32207     35230     23479     21286     25235 
+##    3702_0    3750_0    3752_0    3755_0    3760_0    4081_0    4097_0    4113_0 
+##     20900     33997     32729     22989     23055     22194     45788     23392 
+##    4113_1   42229_0 
+##     23485     23870</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">table</span>(stringr<span class="sc">::</span><span class="fu">str_starts</span>(dtX<span class="sc">$</span>geneID, <span class="st">&quot;3702_0&quot;</span>))</span></code></pre></div>
+<pre><code>## 
+##  FALSE   TRUE 
+## 475420  20900</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>dt <span class="ot">=</span> <span class="fu">merge</span>(odb_ath, dt, <span class="at">by.x =</span> <span class="st">&#39;og&#39;</span>, <span class="at">by.y =</span> <span class="st">&quot;#cluster_id&quot;</span>, <span class="at">all.x =</span> <span class="cn">FALSE</span>, <span class="at">all.y =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="fu">rm</span>(odb)</span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a><span class="fu">rm</span>(odb_ath)</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a><span class="fu">rm</span>(dtX)</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a></span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a>dt <span class="ot">=</span> dt[<span class="sc">!</span><span class="fu">is.na</span>(TAIR)]</span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a>dt[, og <span class="sc">:=</span> <span class="cn">NULL</span>]</span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a>dt<span class="sc">$</span>gene_id <span class="ot">=</span>  <span class="fu">sub</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">..*&quot;</span>, <span class="st">&quot;&quot;</span>, dt<span class="sc">$</span>gene_id)</span>
+<span id="cb26-10"><a href="#cb26-10" tabindex="-1"></a>dt<span class="sc">$</span>TAIR <span class="ot">=</span>  <span class="fu">sub</span>(<span class="st">&quot;:&quot;</span>, <span class="st">&quot;_&quot;</span>, dt<span class="sc">$</span>TAIR)</span>
+<span id="cb26-11"><a href="#cb26-11" tabindex="-1"></a></span>
+<span id="cb26-12"><a href="#cb26-12" tabindex="-1"></a><span class="co"># replace TAIR in dt with TAIR from ath</span></span>
+<span id="cb26-13"><a href="#cb26-13" tabindex="-1"></a>dt <span class="ot">=</span> ath[dt, on <span class="ot">=</span> .(<span class="at">OrthoDB_ID =</span> TAIR)]</span>
+<span id="cb26-14"><a href="#cb26-14" tabindex="-1"></a>dt[, OrthoDB_ID <span class="sc">:=</span> <span class="cn">NULL</span>]</span>
+<span id="cb26-15"><a href="#cb26-15" tabindex="-1"></a>dt <span class="ot">=</span> dt[<span class="sc">!</span><span class="fu">is.na</span>(TAIR)]</span>
+<span id="cb26-16"><a href="#cb26-16" tabindex="-1"></a></span>
+<span id="cb26-17"><a href="#cb26-17" tabindex="-1"></a>psib <span class="ot">=</span> <span class="fu">unique</span>(dt)</span>
+<span id="cb26-18"><a href="#cb26-18" tabindex="-1"></a><span class="fu">colnames</span>(psib) <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>, <span class="st">&quot;to&quot;</span>)</span>
+<span id="cb26-19"><a href="#cb26-19" tabindex="-1"></a></span>
+<span id="cb26-20"><a href="#cb26-20" tabindex="-1"></a>psib<span class="sc">$</span>from_plant <span class="ot">=</span> <span class="st">&#39;ath&#39;</span></span>
+<span id="cb26-21"><a href="#cb26-21" tabindex="-1"></a>psib<span class="sc">$</span>to_plant <span class="ot">=</span> <span class="st">&#39;psib&#39;</span></span>
+<span id="cb26-22"><a href="#cb26-22" tabindex="-1"></a>psib<span class="sc">$</span>source <span class="ot">=</span> <span class="st">&#39;OrthoDB&#39;</span></span>
+<span id="cb26-23"><a href="#cb26-23" tabindex="-1"></a></span>
+<span id="cb26-24"><a href="#cb26-24" tabindex="-1"></a><span class="fu">setcolorder</span>(psib, <span class="fu">names</span>(combo))</span></code></pre></div>
+</div>
+<div id="add-custom-runs-to-translated-pairs" class="section level1" number="8">
+<h1><span class="header-section-number">8</span> add custom runs to
+translated pairs</h1>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>merged <span class="ot">=</span> <span class="fu">rbind</span>(combo, psib, <span class="at">use.names =</span> <span class="cn">TRUE</span>, <span class="at">fill =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
+</div>
+<div id="write-and-zip" class="section level1" number="9">
+<h1><span class="header-section-number">9</span> write and zip</h1>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>file_path <span class="ot">=</span> <span class="st">&#39;../intermediate/OrthoDB_cleaned.txt&#39;</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>data.table<span class="sc">::</span><span class="fu">fwrite</span>(merged, file_path, <span class="at">sep =</span> <span class="st">&#39;</span><span class="sc">\t</span><span class="st">&#39;</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a>root_dir <span class="ot">=</span> <span class="fu">dirname</span>(file_path)</span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>file_name <span class="ot">=</span> <span class="fu">basename</span>(file_path)</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>zip<span class="sc">::</span><span class="fu">zip</span>(<span class="at">zipfile =</span> <span class="fu">paste0</span>(file_path, <span class="st">&quot;.zip&quot;</span>), </span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a>    <span class="at">files =</span> file_name, </span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a>    <span class="at">root =</span> root_dir)</span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a><span class="fu">file.remove</span>(file_path)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 </div>
-<div id="sessioninfo" class="section level1" number="8">
-<h1><span class="header-section-number">8</span> sessionInfo</h1>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<div id="sessioninfo" class="section level1" number="10">
+<h1><span class="header-section-number">10</span> sessionInfo</h1>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
 <pre><code>## R version 4.5.1 (2025-06-13 ucrt)
 ## Platform: x86_64-w64-mingw32/x64
 ## Running under: Windows 10 x64 (build 19045)

@@ -69,6 +69,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 | 4113_0           | stu         |
 | 29760_1          | vvi         |
 | 29760_0          | vvi         |
+| 3702_0          | ath         |
 
 
 # OrthoDB raw
@@ -132,7 +133,6 @@ DMT2DMG = DMT2DMG[!is.na(DMT2DMG$v4_PGSC_DMT), ]
 setDT(DMT2DMG)
 
 ```
-
 
 
 # params
@@ -323,12 +323,96 @@ print(first_last_two_per_plant, n = nrow(first_last_two_per_plant))
 
 ```
 
+
+# OrthoDB custom
+
+```{r, orthoDB_custom}
+
+# 404 ERROR
+# url = "https://data.orthodb.org/current/odb12v1_species.tab.gz"
+# destfile = tempfile(fileext = ".gz")
+# download.file(url, destfile, mode = "wb")
+# species_map = fread(cmd = paste("zcat", destfile), header = FALSE, sep = "\t")
+# setnames(species_map, c("ncbi_tax_id", "organism_id", "scientific_name", 
+#                         "assembly_id", "gene_count", "og_count", "mapping_type"))
+# head(species_map)
+
+
+
+fp = file.path('..', 'input', 'OrthoDB')
+
+fn = 'odb12v1_OG2genes_fruitdiv.zip'
+odb = data.table::fread(file.path(fp, fn), header = FALSE)
+colnames(odb) = c('og', 'geneID')
+setDT(odb)
+odb_ath = odb[stringr::str_starts(geneID, "3702_0")]
+colnames(odb_ath)[2] = "TAIR"
+
+
+zip_path = file.path(fp, "Psibirica_vs_Embryophyta.zip")
+zip_contents <- unzip(zip_path, list = TRUE)
+print(zip_contents$Name)
+target_file = zip_contents$Name[grep("hits", zip_contents$Name)]
+unzip(zip_path, files = target_file, exdir = tempdir())
+lines = readLines(file.path(tempdir(), target_file))
+# remove second and last line
+lines = lines[-c(2, length(lines))]
+dt = data.table::fread(text = paste(lines, collapse = "\n"))
+dt = dt[, 1:2]
+setDT(dt)
+
+table(dt$`#cluster_id` %in% odb_ath$og)
+table(dt$`#cluster_id` %in% odb$og)
+
+dtX = merge(odb, dt, by.x = 'og', by.y = "#cluster_id", all.x = FALSE, all.y = TRUE)
+dtX[, species := sub(":.*", "", geneID)]
+table(dtX$species)
+table(stringr::str_starts(dtX$geneID, "3702_0"))
+
+dt = merge(odb_ath, dt, by.x = 'og', by.y = "#cluster_id", all.x = FALSE, all.y = TRUE)
+rm(odb)
+rm(odb_ath)
+rm(dtX)
+
+dt = dt[!is.na(TAIR)]
+dt[, og := NULL]
+
+dt$gene_id =  sub("\\..*", "", dt$gene_id)
+dt$TAIR =  sub(":", "_", dt$TAIR)
+
+# replace TAIR in dt with TAIR from ath
+dt = ath[dt, on = .(OrthoDB_ID = TAIR)]
+dt[, OrthoDB_ID := NULL]
+dt = dt[!is.na(TAIR)]
+
+psib = unique(dt)
+colnames(psib) = c("from", "to")
+
+psib$from_plant = 'ath'
+psib$to_plant = 'psib'
+psib$source = 'OrthoDB'
+
+setcolorder(psib, names(combo))
+
+
+```
+
+
+# add custom runs to translated pairs
+
+```{r, extend}
+
+merged = rbind(combo, psib, use.names = TRUE, fill = FALSE)
+
+```
+
+
 # write and zip
 
 ```{r, output}
 
 file_path = '../intermediate/OrthoDB_cleaned.txt'
-data.table::fwrite(combo, file_path, sep = '\t')
+data.table::fwrite(merged, file_path, sep = '\t')
 root_dir = dirname(file_path)
 file_name = basename(file_path)
 zip::zip(zipfile = paste0(file_path, ".zip"), 

@@ -165,7 +165,15 @@ pss_long = pss_long %>%
     .groups = "drop"
   )
 
-pss_long$all_pathways[pss_long$all_pathways == ""] = "/"
+pss_long[pss_long == ""] = "-"
+gn[is.na(gn)] = "-"
+sn[is.na(sn)] = "-"
+
+ath.annot = pss_long %>%
+  dplyr::full_join(gn, by = c("id" = "V1")) %>%
+  dplyr::full_join(sn, by = c("id" = "V1"))
+
+
 
 ```
 
