@@ -75,7 +75,7 @@ Reference genomes/proteomes in **bold**
 
 # pipeline
 
-![](./figs/T4.5-pipeline-v1.3 1.png)
+![](https://raw.githubusercontent.com/NIB-SI/skm-translate/main/figs/T4.5-pipeline-v1.3%201.png)
 
 ## JCVI
 
