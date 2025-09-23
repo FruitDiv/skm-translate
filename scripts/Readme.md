@@ -505,7 +505,7 @@ https://doi.org/10.1371/journal.pone.0101850
 
 Initialize an empty set or list covered_genes.
 
-For each method in the list: ["MCScanX", "ensembl-compara", "PLAZA", "OrthoDB", "RBH", "FastOMA"]
+For each method in the list: ["MCScanX", "ensembl-compara", "PLAZA", "OrthoDB", "RBH", "FastOMA"] OR ["MCScanX", "ensembl-compara", "PLAZA", "OrthoDB", "FastOMA", "RBH"]
 
 For every row in the data table dt:
 
@@ -515,7 +515,7 @@ b. Check if the value of the column corresponding to method in this row is TRUE.
 
 c. Check if from_geneID in this row are not in covered_genes.
 
-d. If method is one of ["OrthoDB", "RBH", "FastOMA"]:
+d. If method is one of ["OrthoDB", "RBH", "FastOMA"] OR ["OrthoDB", "FastOMA", "RBH"]:
 
   Check if gene pair is covered by all three methods:
   If yes:
