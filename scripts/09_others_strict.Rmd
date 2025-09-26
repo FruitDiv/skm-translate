@@ -1,0 +1,319 @@
+---
+title: "09_others"
+author: "zagor"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_caption: yes
+    self_contained: yes
+    fig_width: 9
+    fig_height: 6
+    toc: true
+    toc_float:
+      toc_collapsed: false
+    toc_depth: 5
+    number_sections: yes
+    theme: flatly
+    highlight: tango
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
+editor_options:
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dev = c('png', 'pdf'),  # this embeds pdf and crates scrolable blocks if pdf is first
+                      fig.path = "../reports/others/", # save each figure here
+                      # dev = c('png'), 
+                      fig.align = 'center', 
+                      dpi = 300,
+                      fig.height = 6, 
+                      fig.width = 9 ,
+                      # warning = FALSE, message = FALSE
+                      echo = TRUE, message = TRUE, warning = TRUE
+                      )
+```
+
+
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+
+rm(list = ls(all = TRUE))
+gc()
+
+
+library(magrittr)
+library(data.table)
+library(knitr)
+library(ggplot2)
+library(ComplexUpset)
+
+
+`%!in%` = Negate(`%in%`)
+`%nin%` = Negate(`%in%`)
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+
+
+
+```
+
+# Ath gmm
+
+
+```{r, Ath-gmm}
+
+fp = file.path('..', 'intermediate')
+fn = 'mercator_cleaned.txt.zip'
+gmm = data.table::fread(file.path(fp, fn), header = TRUE, fill = TRUE)
+ath.gmm = gmm[gmm$plant == 'ath', ]
+setDT(ath.gmm)
+ath.gmm[, plant := NULL]
+ath.gmm[, source := NULL]
+colnames(ath.gmm)[2:4] = paste('ath', colnames(ath.gmm)[2:4], sep = '_')
+
+```
+
+
+# Ath SKM & annotation
+
+note: some duplicated ids in PSS
+
+
+```{r, Ath-SKM-annot}
+
+fp = file.path('..', 'input', 'ath-annot', 'Phytozome', 'PhytozomeV12', 
+               'early_release', 'Athaliana_447_Araport11', 'annotation')
+# fn = 'Araport11_GFF3_genes_transposons.current_utf8_attributes_CB.tsv'
+fn = 'Athaliana_447_Araport11.geneName.txt'
+gn = data.table::fread(file.path(fp, fn), header = FALSE, fill = TRUE)
+colnames(gn)[2] = 'athName'
+gn$V1 = sub('\\..*', '', gn$V1)
+gn = gn[!duplicated(gn), ]
+
+
+fn = 'Athaliana_447_Araport11.synonym.txt'
+sn = data.table::fread(file.path(fp, fn), header = FALSE, fill = TRUE)
+sn[, merged_column := apply(.SD, 1, function(x) {
+  # Remove NA and empty strings
+  x = x[!is.na(x) & x != ""]
+  paste(x, collapse = " | ")
+}), .SDcols = 2:ncol(sn)]
+# Optionally, remove the original columns V2 to V15
+sn[, (2:(ncol(sn)-1)) := NULL]
+colnames(sn)[2] = 'athSynonims'
+sn$V1 = sub('\\..*', '', sn$V1)
+sn = sn[!duplicated(sn), ]
+
+
+fp = file.path('..', 'input', 'SKM_2025-07-08')
+fn = 'rxn-nodes-public.tsv'
+pss = data.table::fread(file.path(fp, fn), header = TRUE, fill = TRUE)
+ind = grep('^name$|^all_pathways|^short_name$', colnames(pss), value = TRUE)
+pss = pss[, ..ind]
+ind = grep('\\[', pss$name)
+pss = pss[ind, ]
+
+pss[, ids_string := stringr::str_extract(name, "(?<=\\[)[^\\]]+(?=\\])")]
+pss[, ids_list := strsplit(ids_string, split = ",")]
+max_ids = max(lengths(pss$ids_list))
+for (i in seq_len(max_ids)) {
+  pss[[paste0("id_", i)]] = sapply(pss$ids_list, function(x) ifelse(length(x) >= i, x[i], NA))
+}
+pss[, c("ids_string", "ids_list") := NULL]
+
+pss_long = melt(
+  pss,
+  id.vars = c("name", "all_pathways", 'short_name'),       # Columns to keep as is
+  measure.vars = patterns("^id_"),           # Columns to melt (all starting with "id_")
+  variable.name = "id_num",                   # Name for the melted variable column
+  value.name = "id"                           # Name for the melted value column
+)
+
+pss_long = pss_long[!is.na(id) & id != ""]
+pss_long[, id_num := NULL]
+pss_long[, name := NULL]
+pss_long$id = sub('\\..*', '', pss_long$id)
+pss_long = pss_long[!duplicated(pss_long), ]
+table(duplicated(pss_long$id))
+
+pss_long %>%
+  dplyr::filter(id %in% id[duplicated(id)] & stringr::str_starts(id, "^AT")) %>%
+  dplyr::arrange(id) %>%
+  print()
+
+
+pss_long = pss_long %>%
+  dplyr::filter(stringr::str_starts(id, "AT")) %>%
+  dplyr::group_by(id) %>%
+  dplyr::summarise(
+    dplyr::across(
+      .cols = dplyr::everything(),
+      .fns = ~ {
+        vals = unique(na.omit(.))
+        if (length(vals) > 1) paste(vals, collapse = " | ")
+        else if (length(vals) == 1) vals
+        else NA_character_
+      }
+    ),
+    .groups = "drop"
+  )
+
+pss_long[pss_long == ""] = "-"
+gn[is.na(gn)] = "-"
+sn[is.na(sn)] = "-"
+
+ath.annot = pss_long %>%
+  dplyr::full_join(gn, by = c("id" = "V1")) %>%
+  dplyr::full_join(sn, by = c("id" = "V1"))
+
+
+
+```
+
+
+
+```{r}
+
+group = "others"
+
+```
+
+
+**Note**: be careful with 35.2 bin matches
+
+
+```{r, stu, results='asis'}
+
+
+params_list <- list(
+  plantName = 'stu'
+  , plantNameOut = "potato"
+  , plantDirOut = file.path('..', 'reports', group, "potato")
+  , flag = 1
+)
+
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("09_translate-child_strict.Rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
+
+```{r, sly, results='asis'}
+
+
+params_list <- list(
+  plantName = 'sly'
+  , plantNameOut = "tomato"
+  , plantDirOut = file.path('..', 'reports', group, "tomato")
+  , flag = 1
+)
+
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("09_translate-child_strict.Rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
+
+```{r, vvi, results='asis'}
+
+
+params_list <- list(
+  plantName = 'vvi'
+  , plantNameOut = "grapevine"
+  , plantDirOut = file.path('..', 'reports', group, "grapevine")
+  , flag = 1
+)
+
+
+env <- new.env()
+list2env(params_list, envir = env)
+
+child_content <- knitr::knit_child("09_translate-child_strict.Rmd", envir = env, quiet = FALSE)
+cat(child_content)
+
+
+```
+
+
+```{r}
+
+# Step 1: params_list
+# params_list <- list(
+# ...
+# )
+# 
+# Step 2: YAML header in 09_fruitTrees-child.Rmd
+# ---
+# title: "fruitTrees Child"
+# output: html_document
+# params:
+#   plantName1: NULL
+#   plantName2: NULL
+#   plantName3: NULL
+#   plantName4: NULL
+#   plantDirIn: NULL
+#   plantNameOut: NULL
+#   plantDirOut: NULL
+#   pattern_in: NULL
+#   pattern_out: NULL
+#   compara_pattern_in1: NULL
+#   compara_pattern_in2: NULL
+#   plaza_pattern_in1: NULL
+#   plaza_pattern_in2: NULL
+#   ref_genome: NULL
+#   mercator: NULL
+#   mercatorPatternIn1: NULL
+#   mercatorPatternOut1: NULL
+#   mercatorPatternIn2: NULL
+#   mercatorPatternOut2: NULL
+# ---
+# 
+# 
+# access params in the script like:
+# params$plantName1
+# params$plantDirOut
+# 
+# Step 3: Call render() like
+# rmarkdown::render(
+#   input = "09_fruitTrees-child.Rmd",
+#   params = params_list,
+#   envir = new.env(parent = globalenv()),  # optional: isolate execution
+#   output_format = "html_document",
+#   quiet = FALSE
+# )
+# 
+# 
+# This will:
+# Inject params_list into params$...
+# Knit the child Rmd in a separate process
+# Print progress to the console (quiet = FALSE)
+# Save an .html file to the working directory
+
+```
+
+
+
+# SessionInfo
+
+```{r,  echo=TRUE, warning=FALSE, message=FALSE}
+
+sessionInfo()
+
+```
+
+
